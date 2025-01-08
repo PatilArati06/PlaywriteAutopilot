@@ -3,15 +3,25 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "test": "playwright test && node rename-html-report.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.10.2",
+    "allure-commandline": "^2.32.0",
+    "allure-playwright": "^3.0.7"
   },
   "dependencies": {
-    "extent": "^0.4.0"
+    "extent": "^0.4.0",
+    "fs": "^0.0.1-security",
+    "pdf-lib": "^1.17.1",
+    "pdf-parse": "^1.1.1",
+    "playwright": "^1.49.1",
+    "pngjs": "^7.0.0",
+    "tesseract.js": "^6.0.0"
   }
 }

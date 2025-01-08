@@ -2,6 +2,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 // const ExtentReporter = require('./reporters/extentReporter');
 // import { ExtentReporter } from './reporters/extentReporter';
+const CustomHtmlReporter = require('./reporters/custom-html-reporter');
 
 /**
  * Read environment variables from file.
@@ -15,7 +16,7 @@ const { defineConfig, devices } = require('@playwright/test');
 module.exports = defineConfig({
   testDir: './tests',
   /* Maximum time one test can run for. */
-  timeout: 30 * 1000,
+  timeout: 120 * 1000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
@@ -23,13 +24,19 @@ module.exports = defineConfig({
      */
     timeout: 60000
   },
-  // reporter: [
-  //   ['list'], // Console reporter
+  reporter: [
+    ['list'], // Console reporter
   //   ['ExtentReporter'] // Use the custom ExtentReporter class here
-  // ],
-  // use: {
-  //   screenshot: 'only-on-failure', // Capture screenshots only on failures
-  // },
+    // ['allure-playwright'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+  ],
+  use: {
+    headless: false,
+    launchOptions: {
+      executablePath: undefined, // Set to undefined, or just omit the launch options entirely
+    },
+    screenshot: 'on',
+  },
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -51,21 +58,21 @@ module.exports = defineConfig({
   // },
 
   /* Configure projects for major browsers */
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+  // projects: [
+    // {
+    //   name: 'chromium',
+    //   use: { ...devices['Desktop Chrome'] },
+    // },
 
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
 
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
 
     /* Test against mobile viewports. */
     // {
@@ -86,7 +93,7 @@ module.exports = defineConfig({
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
-  ],
+  // ],
 
   /* Run your local dev server before starting the tests */
   // webServer: {
