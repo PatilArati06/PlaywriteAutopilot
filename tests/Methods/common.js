@@ -562,6 +562,341 @@ fetchInvoices: async function(){
   return data;
 },
 
+
+
+fetchInvoiceLineItemFields: async function(){
+  const context = await request.newContext({
+    baseURL: 'https://microservice-dev.briq.com',
+    extraHTTPHeaders: {
+      'Accept': 'application/json, text/plain, */*',
+      'Accept-Language': 'en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Authorization': 'Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IjcxMTE1MjM1YTZjNjE0NTRlZmRlZGM0NWE3N2U0MzUxMzY3ZWViZTAiLCJ0eXAiOiJKV1QifQ.eyJyZXF1aXJlX3Blcm1pc3Npb24iOnRydWUsImlzcyI6Imh0dHBzOi8vc2VjdXJldG9rZW4uZ29vZ2xlLmNvbS9icmlxLWNocm9uaWNsZS1wcm9kdWN0aW9uIiwiYXVkIjoiYnJpcS1jaHJvbmljbGUtcHJvZHVjdGlvbiIsImF1dGhfdGltZSI6MTc0MzUyNjEyMCwidXNlcl9pZCI6IndUQzZHS2VRaXRXbVc0aGVJS0RvREtsSk9HUDIiLCJzdWIiOiJ3VEM2R0tlUWl0V21XNGhlSUtEb0RLbEpPR1AyIiwiaWF0IjoxNzQ0MDM3ODYyLCJleHAiOjE3NDQwNDE0NjIsImVtYWlsIjoicWFhdXRvbWF0aW9uLmJyaXFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInFhYXV0b21hdGlvbi5icmlxQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6ImN1c3RvbSJ9fQ.FzUDAR7115iPEpi2MOVEXmPTUtyG7pyl5UzvCjp3jT_iSIk5FOwHM36AWF01Xww67DnYrldqyJBMwd64YXjjhxBw9f84XxF09wNDooLlRV2TcJcitZK-Jq0S8_SHfZIeAbPiykvXJVSdxjN3BLPYl5Yl8DNnZXTUwu5BpwV2ThG0SOCCPM7xxzyxKNoDIv8zyqMZCL7HItpwXoGq9SCDMIo5qldRkHdkI2mNQKvzuFko_d24LCFulho3Yd8Y4RiG5GLjnT59WRR2KDPa44bO5apRgGzlr8Bg4BXyt3hxehOuDYksd2GZXeO5831Ym1fg3IxicE5gPFsjRnQNAMVhBw',
+      'AUTH': 'e6534e88-8134-4a60-9013-11bd92ac83fb',
+      'Connection': 'keep-alive',
+      'Origin': 'https://app-dev.briq.com',
+      'Referer': 'https://app-dev.briq.com/',
+      'Sec-Fetch-Dest': 'empty',
+      'Sec-Fetch-Mode': 'cors',
+      'Sec-Fetch-Site': 'same-site',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
+      'bearer-company-id': 'handshake_construction',
+      'bearer-email': 'qaautomation.briq@gmail.com',
+      'bearer-id': 'wTC6GKeQitWmW4heIKDoDKlJOGP2',
+      'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      // Add other headers if needed
+    }
+  });
+  const endpoint = `/object-manager/object/3d48bda9-a6af-4424-a07a-5c21b87fa129/handshake_construction`;
+  const response = await context.get(endpoint);
+  console.log('Status:', response.status());
+  const data = await response.json();
+  // console.log('Response Body:', data);
+  await context.dispose();
+  return {
+    "fields": [
+      {
+        "_id": "c92727cc-99b0-4261-be1d-160c1ec1de26",
+        "archive": false,
+        "column_name": "Line_Item_Number__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+          "name"
+        ],
+        "default_value": null,
+        "description": "A unique identifier for the line item",
+        "display_name": "Line Item Numbers",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "726b1b0f-4a06-4f9a-b527-5500909a14a7",
+        "archive": false,
+        "column_name": "Product_Number__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The unique identifier for the product referenced in this line item.",
+        "display_name": "Product Number",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "050f64ad-2d9c-4cb1-b42d-15e56e231a25",
+        "archive": false,
+        "column_name": "Description__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+          "name"
+        ],
+        "default_value": null,
+        "description": "A description of the goods or services provided.",
+        "display_name": "Description",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": true,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "f0a90dc0-0337-497b-9a99-942755c85a43",
+        "archive": false,
+        "column_name": "Quantity__standard",
+        "column_type": "DECIMAL",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The amount of the goods or services provided.",
+        "display_name": "Quantity",
+        "display_type": "Number",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": true,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "9126c9ef-9281-49ff-86bc-5c0c4c3e49f9",
+        "archive": false,
+        "column_name": "Unit_of_Measure__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The unit of measure for the goods or services provided.",
+        "display_name": "Unit of Measure",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "151229ea-a7be-4fb2-9c68-f10bea50d5b5",
+        "archive": false,
+        "column_name": "Unit_Price__standard",
+        "column_type": "NUMERIC",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The price per unit of the goods or services provided.",
+        "display_name": "Unit Price",
+        "display_type": "Number",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "16801919-6892-4224-a735-1c321269d8dc",
+        "archive": false,
+        "column_name": "Total_Price__standard",
+        "column_type": "NUMERIC",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The total price for the line item (quantity multiplied by unit price).",
+        "display_name": "Total Price",
+        "display_type": "Number",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": true,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "7f71ed66-3f54-4e72-a3b8-5d2e64621f65",
+        "archive": false,
+        "column_name": "Tax__standard",
+        "column_type": "NUMERIC",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "Any applicable sales tax charged for the line item.",
+        "display_name": "Tax",
+        "display_type": "Number",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "8e1fe136-0147-488f-8ff5-a5d3769b87af",
+        "archive": false,
+        "column_name": "Discounts__standard",
+        "column_type": "NUMERIC",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "Any applicable discounts or promotions applied to the line item.",
+        "display_name": "Discounts",
+        "display_type": "Number",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "7d2f55ca-78d7-4da2-ab99-f9bf7d5ed37e",
+        "archive": false,
+        "column_name": "Invoice_ID__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "The unique identifier for this invoice",
+        "display_name": "Invoice ID",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "cc9458fc-5d4b-4683-bbb4-e4ee3bf1e63a",
+        "archive": false,
+        "column_name": "Picklist_Options__custom",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "picklist options to choose from",
+        "display_name": "Picklist Options",
+        "display_type": "Picklist",
+        "display_values": [
+          "Value 1",
+          "Value 2",
+          "Value 3",
+          "Value 4"
+        ],
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "00ed1702-7426-42eb-8de3-f21511e7d03b",
+        "archive": false,
+        "column_name": "Custom_Field_1__custom",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "Custom Field 1",
+        "display_type": "Text",
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "485ace7d-0ece-433a-aad9-83a0cebac213",
+        "archive": false,
+        "column_name": "Custom_Field_2__custom",
+        "column_type": "NUMERIC",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "Custom Field 2",
+        "display_type": "Number",
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "ca0596ea-1ba4-4d95-b8e8-41e2c2b8a617",
+        "archive": false,
+        "column_name": "Invoice_Line_Item_ID__standard",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "Invoice Line Item ID",
+        "display_type": "Text",
+        "field_carried_forward": true,
+        "formula": "",
+        "mandatory": false,
+        "object_key": true,
+        "referenced": true
+      },
+      {
+        "_id": "5db24f8d-17de-4ec4-9fc8-bc77d9d4d465",
+        "archive": false,
+        "column_name": "QATest_LineItem__custom",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "QATest_LineItem",
+        "display_type": "Text",
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "0a9fd750-55e3-4e88-84aa-c44b9a1298db",
+        "archive": false,
+        "column_name": "QANewField__custom",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "QANewField",
+        "display_type": "Text",
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      },
+      {
+        "_id": "cc767b13-294b-4011-8d68-0ee52c58265e",
+        "archive": false,
+        "column_name": "MandatoryField__custom",
+        "column_type": "STRING",
+        "contain_customization": [
+        ],
+        "default_value": null,
+        "description": "",
+        "display_name": "MandatoryField",
+        "display_type": "Long Text",
+        "field_carried_forward": false,
+        "formula": "",
+        "mandatory": false,
+        "object_key": false,
+        "referenced": false
+      }
+    ]
+  };
+},
+
   // verifyAnalyzedSatatus: async function(page){
     
   //   const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');

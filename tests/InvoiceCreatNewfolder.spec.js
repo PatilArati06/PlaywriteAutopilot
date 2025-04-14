@@ -2,7 +2,7 @@
 
 const { test, expect, request } = require('@playwright/test');
 // const { chromium } = require('playwright');
-const { login,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices } = require('./Methods/common');
+const { fetchInvoiceLineItemFields,login,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices } = require('./Methods/common');
 const { error } = require('console');
 
 // let browser,page;
@@ -2640,6 +2640,7 @@ test.only('23. Add new company specific line item adding value into all coloums 
       await element.click();
       await page.keyboard.type(value.toString());  
       await page.keyboard.press('Enter');
+      await page.waitForTimeout(10000);
       colindex++;
 
       
@@ -2804,4 +2805,138 @@ test.only('23.1. Add new company specific line item adding value into all coloum
    }
 
     
+});
+
+
+test('4.1 Add new company specific line item adding value into all coloums and validating after saving in table view', async({ page })=>{
+  const fileName = 'Red wing test DV_split_4.pdf';
+  const folderName = 'Automation Testing By playwright2.0';
+  await page.waitForTimeout(12000);
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').fill(folderName);
+  await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  // let fileToSearch = fileName.replace(".pdf","");
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'All' }).click();
+  await page.waitForTimeout(10000);
+  //Get company specific selected line items from API
+  const LineItemsFieldsForAdd = [];
+  const data = await fetchInvoices();
+  const lineItemFields = await fetchInvoiceLineItemFields();
+  data.folder_data.invoice_line_item_fields.forEach((field, index) => {
+    // console.log(`Field ${index + 1}:`, field);
+    const { name, visible } = field;
+    if (visible) {
+          const match = lineItemFields.fields.find(f => f.column_name === name);
+          if (match) {
+            LineItemsFieldsForAdd.push({
+              name: name,
+              display_name: match.display_name,
+              column_type: match.column_type,
+              display_type: match.display_type
+            });
+          }
+  }
+  });
+  console.log(LineItemsFieldsForAdd);
+  await page.getByPlaceholder('Search card').fill(fileName);
+  await page.getByPlaceholder('Search card').press('Enter');
+  const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  await rows.nth(0).click();
+  await page.waitForTimeout(10000);
+  await page.locator("//div[@tab-value='line_items']").click();
+  let noOfLineItems = await getNoOfItems(page,"//div[@tab-value='line_items']");
+  // noOfLineItems = 1;
+  console.log("noOfLineItems = "+noOfLineItems);
+  if(await page.getByRole('button', { name: 'Table View' }).isVisible()){
+    //Shift to table view
+    await page.getByRole('button', { name: 'Table View' }).click();
+  }
+  const lineitemsrows = await page.locator('div[ref="eCenterContainer"] div[role="row"]');
+  let totalRows = await lineitemsrows.count();
+  console.log("totalRows = "+totalRows);
+  let extraRow = await Number(noOfLineItems) + 2;
+  console.log("extraRow = "+extraRow);
+  takeScreenShot(page,'Before add line item','beforeaddlineItems');
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'Add Line Item' }).click();
+   // Map headers to index
+   await page.waitForSelector('.ag-header-cell');
+// Extract all col-id attributes from header cells
+const headers = await page.$$eval('.ag-header-cell', cells =>
+  [...new Set(
+    cells
+      .map(cell => cell.getAttribute('col-id') || '')
+      .map(colId => colId.replace(/_\d+$/, '')) // Remove trailing _1, _2, etc.
+  )]
+);
+    console.log("headers = "+headers);
+const headerIndexMap = {};
+headers.forEach((name, index) => headerIndexMap[name] = index);
+console.log("headerIndexMap = "+headerIndexMap);
+   // Add new line item adding value into all coloums ans validating after saving
+   const LineItemsToAdd = 1;
+   var editedLineItemsMap = new Map();
+   for (let l = 1; l <= LineItemsToAdd; l++) {
+    LineItemsFieldsForAdd.forEach(async (field) => {
+      const colindex = headers.indexOf(field.display_name)+1;
+      const xpath = `div[ref='eCenterContainer'] div[aria-rowindex='${extraRow}'] div[aria-colindex='${colindex}']`;
+     // let xpath = 'input[column_name="'+field.name+'"]';
+     console.log("xpath=="+xpath);
+      const element = page.locator(xpath);
+      // Get dataType from column_type, default to STRING
+      const dataType = field.column_type || 'STRING';
+      // Generate value based on data type
+      let value;
+      if (dataType === 'NUMERIC') {
+        value = Math.floor(Math.random() * 1000);
+      } else if (dataType === 'DECIMAL') {
+        value = (Math.random() * 1000).toFixed(2);
+      } else {
+        value = Math.random().toString(36).substring(7);
+      }
+      console.log("Value ===== " + value);
+      console.log(`Row: ${extraRow}, ColIndex: ${colindex}, Field: ${field.name}, Value: ${value}`);
+      // Set value in map
+      editedLineItemsMap.set(`LineItem_${l}_${field.name}`, `${xpath}|${value}`);
+      // Interact with the element
+      await element.click();
+      await page.keyboard.type(value.toString());
+      await page.keyboard.press('Enter');
+    });
+    extraRow++;
+    if(LineItemsToAdd !== l){
+      await page.getByRole('button', { name: 'Add Line Item' }).click();
+    }
+  }
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+  await page.locator('.buttons').click();
+   await page.waitForTimeout(1000);
+   await page.getByPlaceholder('Search card').fill(fileName);
+   await page.getByPlaceholder('Search card').press('Enter');
+   const rows1 = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+   await rows1.nth(0).click();
+   await page.waitForTimeout(10000);
+   await page.locator("//div[@tab-value='line_items']").click();
+   await page.waitForTimeout(10000);
+   if(await page.getByRole('button', { name: 'Table View' }).isVisible()){
+    //Shift to table view
+    await page.getByRole('button', { name: 'Table View' }).click();
+  }
+   for (let l = 1; l <= LineItemsToAdd; l++) {
+    for (let i = 0; i < LineItemsFieldsForAdd.length; i++) {
+      let xpath = editedLineItemsMap.get("LineItem_"+l+"_"+LineItemsFieldsForAdd[i].name).split("|")[0];
+      let expectedValue = editedLineItemsMap.get("LineItem_"+l+"_"+LineItemsFieldsForAdd[i].name).split("|")[1];
+      const element = page.locator(xpath);
+      let actualValue = await element.textContent();
+      console.log("actualValue = "+actualValue);
+      console.log("expectedValue = "+expectedValue);
+      if(actualValue != null){
+        expect(actualValue.trim()).toBe(expectedValue);
+      }else{
+        expect(null).toBe(expectedValue);
+      }
+    }
+   }
 });
