@@ -1,0 +1,28 @@
+TCID,FolderName,FilesToUpload,StartDateRange,EndDateRange,DescriptionForCreateFolder,OCRModelTypeSpend,uploadFileAtt,linkFileAtt,ProjectNameToEdit,TypestoAdd,Description,UnitPrice,Quantity,TotalPrice
+3,DemoFolder,,,,Testing folder 2.0,Spend 2.0,,,,
+7A,Chasse_Automation2.0,Red wing test DV.pdf,,,,,,,,
+7B,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+7C,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+7D,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+7E,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+7F,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+7G,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+12,Automation Testing By playwright2.0,City of Glendale _2024-Jun-04 13_06_07.pdf,,,,,,,,
+14,Automation Testing By playwright2.0,,01-05-2025,01-06-2025,,,,,,
+15,Automation Testing By playwright2.0,acent imaging.pdf,,,,,,,,
+16,Automation Testing By playwright2.0,acent imaging.pdf,,,,,,,,
+17,Automation Testing By playwright2.0,acent imaging.pdf,,,,,image.png,acent imaging.pdf,,
+18_54,Automation Testing By playwright2.0,acent imaging.pdf,,,,,,,INSTITUTIONAL WARRANTYSTL - 10000071,
+18,Automation Testing By playwright2.0,acent imaging.pdf,,,,,,,,"General Overhead,Purchase Order,Work Order"
+20.2,Automation Testing By playwright2.0,Red wing test DV_split_4.pdf,,,,,,,,,,101,74,285
+20.2.1,Automation Testing By playwright2.0,Red wing test DV_split_4.pdf,,,,,,,,,,22.50,50,67.90
+20.3,Automation Testing By playwright2.0,Red wing test DV_split_4.pdf,,,,,,,,,Brush3,103,54,255
+20.3.1,Automation Testing By playwright2.0,Red wing test DV_split_4.pdf,,,,,,,,,Brush4,134,76,34.65
+20.4,Automation Testing By playwright2.0,Red wing test DV_split_4.pdf,,,,,,,,,,,,
+22,Chasse_Automation2.0,JT Electric New 1.pdf,,,,,,,,,,,,
+22.1,Chasse_Automation2.0,964543_Reed.pdf,,,,,,,,,,,,
+23,Chasse_Automation2.0,419839_AUSTIN_TOOL_INC.pdf,,,,,,,,,,,
+23.1,Chasse_Automation2.0,ServiceInvoice_0167040 NEW.pdf,,,,,,,,,,,,
+24,Chasse_Automation2.0,JT Electric New 1.pdf,,,,,,,,,,,,
+25,Chasse_Automation2.0,JT Electric New 1.pdf,,,,,,,,,,,,
+26,Chasse_Automation2.0,JT Electric New 1.pdf,,,,,,,,,,,,

@@ -1,0 +1,5 @@
+FieldName,XPATH,Value
+Description,div[ref="eCenterContainer"] div[aria-rowindex='ROWINDEX'] div[aria-colindex='2'],string
+Unit_Price,div[ref="eCenterContainer"] div[aria-rowindex='ROWINDEX'] div[aria-colindex='3'],float
+Quantity,div[ref="eCenterContainer"] div[aria-rowindex='ROWINDEX'] div[aria-colindex='4'],number
+Total_Price,div[ref="eCenterContainer"] div[aria-rowindex='ROWINDEX'] div[aria-colindex='5'],float

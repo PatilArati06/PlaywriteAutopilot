@@ -198,16 +198,22 @@ module.exports = {
     if (isVisible) {
       await page.getByLabel('Browse Files').setInputFiles(filePath);
     }else{
-      await page.getByRole('button', { name: 'Import', exact: true }).click();
+      // await page.getByRole('button', { name: 'Import', exact: true }).click();
+      await page.locator('button:nth-child(6)').first().click();
       await page.getByLabel('Browse Files').setInputFiles(filePath);
     }
-    await page.getByRole('button', { name: 'Next' }).click();
+    // await page.getByRole('button', { name: 'Next' }).click();
+    await page.locator("//div[@class='d-flex'] //button[text()='Next']").click();
     await page.getByText('Done').click();
   },
 
   waitForAnalyzedSatatus: async function(page,fileToUpload){
-    await page.getByLabel('Search card').fill(fileToUpload.replace(".pdf",""));
-      await page.locator('(//input[@type="text"])[1]').press('Enter');
+    console.log("fileToUpload in waitForAnalyzedSatatus=="+fileToUpload.replace(".pdf",""));
+    await page.waitForTimeout(10000);
+    // await page.getByLabel('Search card').fill(fileToUpload.replace(".pdf",""));
+    await page.getByPlaceholder('Search card').fill(fileToUpload.replace(".pdf",""));
+    await page.getByPlaceholder('Search card').press('Enter');
+      // await page.locator('(//input[@type="text"])[1]').press('Enter');
       
      await page.waitForTimeout(10000);
      await test.step('Invoice uploaded', async () => {
@@ -223,11 +229,12 @@ module.exports = {
     console.log("status=== "+await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible());
      while(isAnalyzed !== true){
       await page.waitForTimeout(1000);
-      await page.getByRole('button', { name: 'Refresh' }).click();
-      if(await waitForElementToVisible(page,"//input[@id='headerChk']")){
+      // await page.getByRole('button', { name: 'Refresh' }).click();
+      await page.locator('button:nth-child(8)').first().click();
+      // if(await waitForElementToVisible(page,"//input[@id='headerChk']")){
         console.log("in while status=== "+await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible());
         isAnalyzed = await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible();
-      }
+      // }
     
      }
      await test.step('Invoice Analyzed', async () => {
@@ -492,7 +499,7 @@ getRandomValue:  function(){
 },
 
 getRandomValuesAsPerDataType:  function(datatype){
-  if(datatype === 'string'){
+  if(datatype === 'string' || datatype === 'STRING'){
     // let length = 6;
     // const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     // return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
@@ -505,7 +512,11 @@ getRandomValuesAsPerDataType:  function(datatype){
       "Subscription",
       "Consulting",
       "Email Service",
-      "Analytics"
+      "Analytics",
+      "001",
+      "002",
+      "003",
+      "004"
     ];
   
     const plans = ["Basic", "Standard", "Premium", "Enterprise"];
@@ -515,12 +526,26 @@ getRandomValuesAsPerDataType:  function(datatype){
   
     return `${rand(plans)} ${rand(baseItems)} - ${rand(actions)}`;
   }
-  if(datatype === 'float'){
+  if(datatype === 'float' || datatype === 'DECIMAL'){
     const decimals = Math.random() > 0.5 ? 2 : 1;
     return Number((Math.random() * 500).toFixed(decimals)); // Random float up to 500
   }
-  if(datatype === 'number'){
+  if(datatype === 'number' || datatype === 'NUMERIC'){
     return Math.floor(Math.random() * 500); // Random integer up to 500
+  }
+  if(datatype === 'date' || datatype === 'Date' || datatype === 'DATE'){
+    const start = new Date('2024-01-01');
+  const end = new Date('2024-12-31');
+
+  const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
+  const randomDate = new Date(randomTime);
+
+  // Format to MM/DD/YYYY
+  const mm = String(randomDate.getMonth() + 1).padStart(2, '0');
+  const dd = String(randomDate.getDate()).padStart(2, '0');
+  const yyyy = randomDate.getFullYear();
+
+  return `${mm}/${dd}/${yyyy}`;
   }
 
   throw new Error('Invalid type provided');
@@ -551,12 +576,13 @@ fetchInvoices: async function(){
     }
   });
 
-  const endpoint = `/invoices/companies/handshake_construction/folders/65806f42-4115-44ae-9c01-066cd82d8dbe_v2?invoices=false`;
+  // const endpoint = `/invoices/companies/handshake_construction/folders/65806f42-4115-44ae-9c01-066cd82d8dbe_v2?invoices=false`;
+  const endpoint = `/invoices/companies/handshake_construction/folders/8bd0f357-df5f-485c-9a1d-0d8444b73ea3_v2?invoices=false`; //Chasse_Automation2.0
   const response = await context.get(endpoint);
 
   console.log('Status:', response.status());
   const data = await response.json();
-  // console.log('Response Body:', data);
+  console.log('Response Body:', data);
 
   await context.dispose();
   return data;

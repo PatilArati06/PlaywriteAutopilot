@@ -1,9 +1,12 @@
 // @ts-check
 
+import fs from 'fs';
+// import { console } from 'inspector';
+import { exit } from 'process';
 const { test, expect, request } = require('@playwright/test');
 // const { chromium } = require('playwright');
 const { fetchInvoiceLineItemFields,login,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices } = require('./Methods/common');
-const { error } = require('console');
+// const { error, Console } = require('console');
 
 // let browser,page;
 var testData = new Map();
@@ -80,6 +83,7 @@ test('1.Navigate to folders Homepage', async({ page })=>{
     }
     // console.log("##### "+addFolder);
     // addFolder = false;
+    await page.waitForTimeout(1000);
     if(addFolder == true){
       takeScreenShot(page,'Add Folder button','addFolder');
     
@@ -115,11 +119,13 @@ test('3.Verify the creat folder',async({ page})=>{
       createFolder = await page.getByRole('button', { name: 'Create Folder' }).isVisible();
       count++;
     }
-    // console.log("##### "+createFolder);
+    console.log("##### "+createFolder);
+    
   if(createFolder == true){
+    await page.waitForTimeout(12000);
     takeScreenShot(page,'Create Folder button','createFolder');
  
-}
+  }
   await expect(createFolder).toEqual(true);
   await page.getByRole('button', { name: 'Create Folder' }).click();
  
@@ -138,6 +144,7 @@ test('3.Verify the creat folder',async({ page})=>{
   //   isTextVisible = await page.getByText("Card createdx").isVisible();
   //   count++;
   // }
+  await page.waitForTimeout(12000);
   takeScreenShot(page,'Folder Created','createFolder1');
  
     // expect(isTextVisible).toEqual(true);
@@ -174,12 +181,12 @@ test('5. Verify edit and delete folder on the folder card', async ({ page }) => 
 
   //search new created folder and edit
   // await page.getByRole('link', { name: 'Invoices' }).click();
-  await page.getByRole('button', { name: 'Invoices' }).click();
+  await page.getByRole('button', { name: 'Invoices' }).first().click();
   await page.getByRole('link', { name: 'Invoices' }).click();
   await page.getByLabel('Search card').fill('New Folder for testing');
   takeScreenShot(page,'New folder name for edit','newfoldername');
   
-  await page.locator('.question-card-menu-button').click();
+  await page.locator('.question-card-menu-button').first().click();
   await page.getByRole('menuitem', { name: 'Edit' }).click();
   await page.getByLabel('Name your folder (Required)').click();
   await page.getByLabel('Name your folder (Required)').fill('New Folder for testing edited');
@@ -232,50 +239,60 @@ test('5. Verify edit and delete folder on the folder card', async ({ page }) => 
 
 test('6. Click and open the folder ', async ({ page }) => {
   await page.getByRole('link', { name: 'Invoices' }).click();
-  await page.getByLabel('Search card').fill('Automation Testing By playwright');
-  await page.locator("//strong[normalize-space()='Automation Testing By playwright']").click();
-  let element = page.locator("//strong[normalize-space()='Automation Testing By playwright']");
+  await page.getByLabel('Search card').fill('Automation Testing By playwright2.0');
+  await page.locator("//strong[normalize-space()='Automation Testing By playwright2.0']").click();
+  let element = page.locator("//strong[normalize-space()='Automation Testing By playwright2.0']");
   let text = await element.textContent();
   takeScreenShot(page,'Take screenshot after open folder','openfoldercheck');
   
-  expect(text).toContain('Automation Testing By playwright');
+  expect(text).toContain('Automation Testing By playwright2.0');
   
 });
 test('7(a). . Verify upload invoice with single line item', async ({ page }) => {
     
     const folderName = testData.get('7A').get('FolderName');
-    const fileToUpload = testData.get('7A').get('FilesToUpload');
     await page.click("//div[text()='Invoices ']");
     await page.getByLabel('Search card').fill(folderName);
     await page.locator("//strong[normalize-space()='"+folderName+"']").click();
     await page.waitForTimeout(12000);
-    uploadInvoice(page,'./FilesToUpload/'+fileToUpload);
-    await page.waitForTimeout(120000);
-    waitForAnalyzedSatatus(page,fileToUpload);
-   
-    // verifyAnalyzedSatatus(page);
-    if(await waitForElementToVisible(page,"//input[@id='headerChk']")){
-      await page.locator("//input[@id='headerChk']").click(); 
-    }
-    const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
-    let statues = await getGridColumnTextsByindex(page, "3",rows);
-    let fileNames = await getGridColumnTextsByindex(page, "2",rows);
+    // const fileToUpload = testData.get('7A').get('FilesToUpload');
+    const fileNamesUpload = fs.readFileSync("fileNamesToUpload.txt",{
+                encoding: 'utf-8'
+              }).split('\n')
     let statusReport = [];
-    let isactualStatusValVisible = false;
-    for (let i = 0; i < statues.length; i++) {
+    for(let i=0; i < fileNamesUpload.length; i++){
+      const fileToUpload = fileNamesUpload[i].trim();
+      // console.log("Uploading File = "+fileToUpload);
      
-      const actualStatusVal = statues[i].trim();
-      // console.log(`Processing: ${actualStatusVal}`);
-      if(actualStatusVal === 'Analyzed'){
-        isactualStatusValVisible = true;
-        statusReport.push(isactualStatusValVisible);
-        console.log(`file ${fileNames[i]} status found in the table as Analyzed`);
-      }else{
-        isactualStatusValVisible = false;
-        statusReport.push(isactualStatusValVisible);
-        console.log(`file ${fileNames[i]} status not found in the table as Analyzed`);
-      }
+      await uploadInvoice(page,'./FilesToUpload/'+fileToUpload);
+      await page.waitForTimeout(12000);
+      await page.getByRole('button', { name: 'All' }).click();
+      await waitForAnalyzedSatatus(page,fileToUpload);
+    
+      // verifyAnalyzedSatatus(page);
+      // if(await waitForElementToVisible(page,"//input[@id='headerChk']")){
+      //   await page.locator("//input[@id='headerChk']").click(); 
+      // }
+      const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+      let statues = await getGridColumnTextsByindex(page, "3",rows);
+      let fileNames = await getGridColumnTextsByindex(page, "2",rows);
       
+      let isactualStatusValVisible = false;
+      for (let i = 0; i < statues.length; i++) {
+      
+        const actualStatusVal = statues[i].trim();
+        // console.log(`Processing: ${actualStatusVal}`);
+        if(actualStatusVal === 'Analyzed'){
+          isactualStatusValVisible = true;
+          statusReport.push(isactualStatusValVisible);
+          console.log(`file ${fileNames[i]} status found in the table as Analyzed`);
+        }else{
+          isactualStatusValVisible = false;
+          statusReport.push(isactualStatusValVisible);
+          console.log(`file ${fileNames[i]} status not found in the table as Analyzed`);
+        }
+        
+      }
     }
     console.log(statusReport);
       if(statusReport.includes(false)){
@@ -543,12 +560,13 @@ test('8.Verify Single and multiple selection of invoices from the table', async 
   await page.getByLabel('Search card').waitFor({ state: 'visible' });
   await page.getByLabel('Search card').fill('Automation Testing By playwright2.0');
   await page.locator("//strong[normalize-space()='Automation Testing By playwright2.0']").click();
-  // await page.waitForTimeout(120000);
+  await page.waitForTimeout(120000);
+  await page.getByRole('button', { name: 'All' }).click();
   const isVisible = await page.locator("//strong[normalize-space()='Import Files']").isVisible();
 
   if (!isVisible) {
     // await page.waitForTimeout(120000);
-    await page.locator("//input[@id='headerChk']").click(); //click selectall checkbox
+    await page.locator("//input[@role='checkbox']").click(); //click selectall checkbox
     //Verify all checkboxes in table checked or not
     const checkboxes = await page.locator("//div[@ref='eCheckbox']//input[@ref='eInput']");
     takeScreenShot(page,'All checkboxs checked','allcheckboxs');
@@ -560,7 +578,7 @@ test('8.Verify Single and multiple selection of invoices from the table', async 
       console.log(`Checkbox ${i + 1} is ${isChecked ? 'checked' : 'unchecked'}`);
       expect(isChecked).toBe(true); // This will fail if any checkbox is not checked
     }
-    await page.locator("//input[@id='headerChk']").click();
+    await page.locator("//input[@role='checkbox']").click();
     //Verify single checkbox selection
     const checkbox1 = checkboxes.nth(0);
     await checkbox1.click();
@@ -589,7 +607,7 @@ test('9.verify the tabs  - Pending review, Approved, Rejected, Needs Attention, 
   // await page.waitForTimeout(12000);
   await page.click("//div[text()='Invoices ']");
   await page.getByLabel('Search card').fill('Automation Testing By playwright');
-  await page.locator('div').filter({ hasText: /^Automation Testing By playwright$/ }).nth(1).click();
+  await page.locator('div').filter({ hasText: /^Automation Testing By playwright2.0$/ }).nth(1).click();
   //list of tabs
   await page.waitForTimeout(12000);
 const Pre_Approved_tab = page.getByRole('tab', { name: 'Pre Approved' });
@@ -2388,7 +2406,11 @@ test.only('22. Edit value in company specific line iteam and save the changes in
           let colindex = 2;
           for (let i = 0; i < LineItemsFieldsForEdit.length; i++) {
             let xpath = "div[ref='eCenterContainer'] div[aria-rowindex='"+c+"'] div[aria-colindex='"+colindex+"']";
-            const element = page.locator(xpath);
+            const isFieldVisible = await page.locator(xpath).isVisible();
+            if(!isFieldVisible && await page.getByRole('button', { name: 'Add Line Item' }).isVisible()){
+              await page.getByRole('button', { name: 'Add Line Item' }).click();
+            }
+            const element = await page.locator(xpath);
             let dataType = "number";
           if(LineItemsFieldsForEdit[i].includes('Description')){
             dataType = "string";
@@ -2410,7 +2432,10 @@ test.only('22. Edit value in company specific line iteam and save the changes in
    console.log(editedLineItemsMap);
    await page.waitForTimeout(1000);
    await page.getByRole('button', { name: 'Save' }).click();
-   await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+   
+   if(await page.getByRole('button', { name: 'SAVE ANYWAYS' }).isVisible()){
+    await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+   }
    
 
    await page.locator('.buttons').click();
@@ -2478,6 +2503,7 @@ test.only('22.1. Edit value in company specific line iteam and save the changes 
     await page.waitForTimeout(10000);
 
   await page.locator("//div[@tab-value='line_items']").click();
+  
   // takeScreenShot(page,'Before update UnitPrice,Quantity,TotalPrice','beforeupdatelineItems');
 
   if(await page.locator("//strong[normalize-space()='Table View of Line Items']").isVisible()){
@@ -2497,15 +2523,19 @@ test.only('22.1. Edit value in company specific line iteam and save the changes 
         takeScreenShot(page,'Before Edit Line Items'+l,'lineItems'+l);
 
         for (let i = 0; i < LineItemsFieldsForEdit.length; i++) {
-          let dataType = "number";
-          if(LineItemsFieldsForEdit[i].includes('Description')){
-            dataType = "string";
-          }
-          let value = await getRandomValuesAsPerDataType(dataType);
-          console.log("Value ===== "+value);
           let xpath = 'input[column_name="'+LineItemsFieldsForEdit[i]+'"]';
           // console.log("XPATH ==== "+xpath);
-          const element = page.locator(xpath);
+          const isFieldVisible = await page.locator(xpath).isVisible();
+          if(!isFieldVisible && await page.getByRole('button', { name: 'Add Line Item' }).isVisible()){
+             await page.getByRole('button', { name: 'Add Line Item' }).click();
+          }
+          const element = await page.locator(xpath);
+          const columnType = await element.getAttribute('column_type');
+          console.log('Column Type:', columnType);
+          
+          let value = await getRandomValuesAsPerDataType(columnType);
+          console.log("Value ===== "+value);
+          
           editedLineItemsMap.set("LineItem_"+l+"_"+LineItemsFieldsForEdit[i],xpath+"|"+value.toString());
           await element.clear();
           await element.fill(value.toString());
@@ -2522,7 +2552,9 @@ test.only('22.1. Edit value in company specific line iteam and save the changes 
   //  console.log(editedLineItemsMap);
 
    await page.getByRole('button', { name: 'Save' }).click();
-   await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+   if(await page.getByRole('button', { name: 'SAVE ANYWAYS' }).isVisible()){
+    await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+   }
    await page.locator('.buttons').click();
    await page.waitForTimeout(1000);
    await page.getByPlaceholder('Search card').fill(fileName);
@@ -2727,6 +2759,7 @@ test.only('23.1. Add new company specific line item adding value into all coloum
   let noOfLineItems = await getNoOfItems(page,"//div[@tab-value='line_items']");
   // noOfLineItems = 1;
   console.log("noOfLineItems = "+noOfLineItems);
+  let expected_noOfLineItems = Number(noOfLineItems) + 1;
   if(await page.locator("//strong[normalize-space()='Table View of Line Items']").isVisible()){
     //Shift to form view
     await page.getByRole('button', { name: '' }).click();
@@ -2748,12 +2781,11 @@ test.only('23.1. Add new company specific line item adding value into all coloum
     let colindex = 2;
     for (let i = 0; i < LineItemsFieldsForAdd.length; i++) {
       let xpath = 'input[column_name="'+LineItemsFieldsForAdd[i]+'"]';
-      const element = page.locator(xpath);
-      let dataType = "number";
-      if(LineItemsFieldsForAdd[i].includes('Description')){
-        dataType = "string";
-      }
-      let value = await getRandomValuesAsPerDataType(dataType);
+      const element = page.locator(xpath).first();
+      const columnType = await element.getAttribute('column_type');
+      console.log('Column Type:', columnType);
+      
+      let value = await getRandomValuesAsPerDataType(columnType);
       console.log("Value ===== "+value);
       editedLineItemsMap.set("LineItem_"+l+"_"+LineItemsFieldsForAdd[i],xpath+"|"+value.toString());
       await element.click();
@@ -2770,7 +2802,9 @@ test.only('23.1. Add new company specific line item adding value into all coloum
   }
  
   await page.getByRole('button', { name: 'Save' }).click();
-  await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+  if(await page.getByRole('button', { name: 'SAVE ANYWAYS' }).isVisible()){
+    await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+  }
 
   await page.locator('.buttons').click();
    await page.waitForTimeout(1000);
@@ -2786,6 +2820,10 @@ test.only('23.1. Add new company specific line item adding value into all coloum
     //Shift to form view
     await page.getByRole('button', { name: '' }).click();
   }
+
+  let actual_noOfLineItems = await getNoOfItems(page,"//div[@tab-value='line_items']");
+   expect(Number(actual_noOfLineItems)).toBe(expected_noOfLineItems);
+   await page.locator('//button[text()="'+actual_noOfLineItems+'"]').click();
 
    for (let l = 1; l <= LineItemsToAdd; l++) {
     for (let i = 0; i < LineItemsFieldsForAdd.length; i++) {
@@ -2805,6 +2843,393 @@ test.only('23.1. Add new company specific line item adding value into all coloum
    }
 
     
+});
+
+test.only('24. Verify Edit value in company specific summary fields and save the changes', async({ page })=>{
+  const fileName = testData.get('24').get('FilesToUpload');
+  const folderName = testData.get('24').get('FolderName');
+  await page.waitForTimeout(12000);
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').fill(folderName);
+  await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  // let fileToSearch = fileName.replace(".pdf","");
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'All' }).click();
+  await page.waitForTimeout(10000);
+
+  //Get company specific selected line items from API
+  const APISummaryFields = [];
+  const data = await fetchInvoices();
+  console.log('Response Body:', data);
+  data.folder_data.invoice_fields.forEach((field, index) => {
+    console.log(`Field ${index + 1}:`, field);
+    const { name, visible } = field;
+   
+    if (visible) {
+      APISummaryFields.push(name); // or push the whole field if needed
+    }
+  });
+
+  console.log(APISummaryFields);
+
+  await page.getByPlaceholder('Search card').fill(fileName);
+  await page.getByPlaceholder('Search card').press('Enter');
+  const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  await rows.nth(0).click();
+  takeScreenShot(page,'Before Edit Summary','beforeeditsummary');
+  await page.waitForTimeout(10000);
+  var editedSummaryFieldMap = new Map();
+  for (let i = 0; i < APISummaryFields.length; i++) {
+    console.log("Field Name: "+APISummaryFields[i]);
+    // if(APISummaryFields[i] === 'Vendor__standard'){
+    //   continue;
+    // }
+    let xpath = 'input[column_name="'+APISummaryFields[i]+'"]';
+    let xpathdiv = 'div[column_name="'+APISummaryFields[i]+'"]';
+    let element = await page.locator(xpath).first();
+    let finalXpath;
+    if(await page.locator(xpath).first().isVisible()){
+      console.log("input visible");
+      element = await page.locator(xpath).first();
+      finalXpath = xpath;
+    }else if(await page.locator(xpathdiv).first().isVisible()){
+      console.log("div visible");
+      element = await page.locator(xpathdiv).first();
+      finalXpath = xpathdiv;
+    }else{
+      console.log("in else...")
+      finalXpath = "Invalid";
+    }
+    
+    const columnType = await element.getAttribute('column_type');
+    const display_type = await element.getAttribute('display_type');
+    
+    console.log('Column Type:', columnType+" display_type:"+display_type);
+    
+    let value = await getRandomValuesAsPerDataType(columnType);
+    console.log("Value ===== "+value);
+   
+       
+    if(APISummaryFields[i].includes("Vendor")){
+      if(await page.getByRole('button', { name: 'Change vendor' }).isVisible()){
+        await page.getByRole('button', { name: 'Change vendor' }).click();
+      }
+        // const secondElement = await element.nth(1);
+        // await secondElement.click();
+        await page.locator('button[aria-label="append icon"]').click();
+        const options = await page.locator("div[class='overflow-scroll px-3'] div[class='text-body black--text']");
+        const count = await options.count();
+        const randomIndex = Math.floor(Math.random() * count);
+        value = await options.nth(randomIndex).innerText();
+        await options.nth(randomIndex).click(); 
+        await page.locator('button').filter({ hasText: /^Save$/ }).click();
+      
+    }else if(APISummaryFields[i].includes("Type")){
+      // Step 1: Click the element to open the dropdown
+      await page.locator('div:nth-child(2) > .v-input > .v-input__control > .v-input__slot').first().click(); // or more specific selector 
+      // Step 2: Wait for the listbox to appear v-list v-select-list v-sheet theme--light v-list--dense theme--light
+      await page.getByRole('listbox').waitFor({ state: 'visible' });
+      //console.log("listboxValue ===== "+listbox);
+
+      const options = await page.locator("div[role='listbox'] div[class='v-list-item__title']"); // or update with actual selector
+      const count = await options.count();
+
+      // for (let i = 0; i < count; i++) {
+      //   const text = await options.nth(i).innerText();
+      //   console.log(`Option ${i}: ${text}`);
+      // }
+
+      // Step 3: Click the option
+      const randomIndex = Math.floor(Math.random() * count);
+      value = await options.nth(randomIndex).innerText();
+      await options.nth(randomIndex).click(); 
+      // await page.getByRole('option', { name: 'General overhead' }).click();
+    } else{
+      if(display_type === "Text" || display_type === "Currency"){
+          // let value = await getRandomValuesAsPerDataType(columnType);
+          // console.log("Value ===== "+value);
+          await element.click();
+          await element.clear();
+          await page.keyboard.type(value.toString());  
+          await page.keyboard.press('Enter');
+      }
+      if(display_type === "Date"){
+        // let value = await getRandomValuesAsPerDataType(columnType);
+        // console.log("Value ===== "+value);
+        let xpathdivinput = 'div[column_name="'+APISummaryFields[i]+'"] input';
+        finalXpath = xpathdivinput;
+        element = await page.locator(xpathdivinput).first();
+        await element.click();
+        
+        await element.clear();
+        await page.keyboard.type(value.toString());  
+        await page.keyboard.press('Enter');
+      }
+    }
+    editedSummaryFieldMap.set(APISummaryFields[i],finalXpath+"|"+value.toString());
+    
+  }
+  console.log(editedSummaryFieldMap);
+  console.log("Saving.....")
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+  await page.locator('.buttons').click();
+   await page.waitForTimeout(1000);
+   await page.getByPlaceholder('Search card').fill(fileName);
+   await page.getByPlaceholder('Search card').press('Enter');
+   const rows1 = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+   await rows1.nth(0).click();
+   await page.waitForTimeout(10000);
+
+  for (let i = 0; i < APISummaryFields.length; i++) {
+      let xpath = editedSummaryFieldMap.get(APISummaryFields[i]).split("|")[0];
+      let expectedValue = editedSummaryFieldMap.get(APISummaryFields[i]).split("|")[1];
+      let actualValue = "";
+      if(xpath.includes("Vendor")){
+        xpath = "//h5[text()='"+expectedValue+"']";
+        actualValue = await page.locator(xpath).innerText();
+      }else{
+        actualValue = await page.locator(xpath).inputValue();
+      }
+      console.log("xpath = "+xpath);
+      console.log("expectedValue = "+expectedValue);
+      console.log("actualValue = "+actualValue);
+      // console.log("expectedValue = "+expectedValue);
+      if(actualValue != null){
+        expect(actualValue.trim()).toBe(expectedValue);
+      }else{
+        expect(null).toBe(expectedValue);
+      }
+    }
+});
+
+test.only('25. Verify Default Allocation for vendor on invoice allocation screen', async({ page })=>{
+  const fileName = testData.get('25').get('FilesToUpload');
+  const folderName = testData.get('25').get('FolderName');
+  await page.waitForTimeout(12000);
+
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByRole('link', { name: 'Vendors' }).click();
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill('1Vendor');
+ 
+  await page.locator('table tbody tr').hover();
+  const button = page.locator('button:has(i.mdi-pencil-outline)');
+  await button.waitFor({ state: 'visible' });
+  await button.click();
+
+  await page.getByRole('tab', { name: 'Default Allocation' }).click();
+  var defaultAllocationValueMap = new Map();
+
+  await page.locator("//label[text()='Type']/..//div[@class='v-select__selections']").click();
+  await page.waitForSelector("div[role='option']");
+  await page.locator("div[role='option']", { hasText: 'Job' }).click();
+  defaultAllocationValueMap.set("Type","Job");
+
+  console.log("Projects...............");
+  
+  await page.getByRole('textbox', { name: 'Project' }).click();
+  await page.locator("div[role='option'] span", { hasText: '10003714 - PRO-PRO10003714' }).click();
+  // let options = await page.locator('(//div[@role="listbox"])[2] //div[@role="option"] //span'); // or update with actual selector
+  // let count = await options.count();
+  // for (let i = 0; i < count; i++) {
+  //   const text = await options.nth(i).innerText();
+  //   console.log(`Option ${i}: ${text}`);
+  // }
+  // let randomIndex = Math.floor(Math.random() * count);
+  // let value = await options.nth(randomIndex).innerText();
+  // console.log("project value = "+value);
+  // await options.nth(randomIndex).click(); 
+
+  defaultAllocationValueMap.set("Project ID","10003714 - PRO-PRO10003714");
+  await page.waitForTimeout(1000);
+
+  console.log("Cost Code...............");
+  await page.getByRole('textbox', { name: 'Cost Code' }).click();
+  await page.locator("div[role='option'] span", { hasText: '000000001 - PROJECT MANAGER' }).click();
+  // let options1 = await page.locator('(//div[@role="listbox"])[1] //div[@role="option"] //span'); // or update with actual selector
+  // let count1 = await options1.count();
+  //  for (let i = 0; i < count1; i++) {
+  //       const text = await options1.nth(i).innerText();
+  //       console.log(`Option ${i}: ${text}`);
+  //     }
+  // randomIndex = Math.floor(Math.random() * count);
+  // value = await options.nth(randomIndex).innerText();
+  // console.log("cost code value = "+value);
+  // await page.locator('//input[@placeholder="Cost Code"]').clear();
+  // await page.locator('//input[@placeholder="Cost Code"]').fill(value);
+  // await page.locator("//div[@role='option'] //span[text()='"+value+"']").click();
+ 
+  defaultAllocationValueMap.set("Friendly Cost Code","000000001 - PROJECT MANAGER");
+
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').fill(folderName);
+  await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  // let fileToSearch = fileName.replace(".pdf","");
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'All' }).click();
+  await page.waitForTimeout(10000);
+
+  await page.getByPlaceholder('Search card').fill("1Vendor");
+  await page.getByPlaceholder('Search card').press('Enter');
+  const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  await rows.nth(0).click();
+  
+  await page.waitForTimeout(10000);
+  await page.getByRole('tab', { name: 'Allocations' }).click();
+  await page.getByRole('button', { name: 'Add new row' }).click();
+
+  //Validate values on invoice allocation screen
+  const allocations_rows = await page.locator('table tbody tr');
+  const total_allocations_rows = await allocations_rows.count();
+  console.log("total_allocations_rows="+total_allocations_rows);
+
+  for (const [key, value] of defaultAllocationValueMap) {
+    console.log(`Key: ${key}, Value: ${value}`);
+    let actualValue = await page.locator("(//label[text()='"+key+"']/..//input[contains(@id,'input')])["+total_allocations_rows+"]").inputValue();
+    let expectedValue = defaultAllocationValueMap.get(key);
+    console.log("actualValue="+actualValue);
+    console.log("expectedValue="+expectedValue);
+    if(actualValue != null){
+      expect(actualValue.trim()).toBe(expectedValue);
+    }else{
+      expect(null).toBe(expectedValue);
+    }
+  }
+ 
+});
+
+test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upload another invoice with same vendor and verify if vendor get assigned', async({ page })=>{
+  const folderName = testData.get('26').get('FolderName');
+  await page.waitForTimeout(12000);
+
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByRole('link', { name: 'Vendors' }).click();
+  await page.getByRole('button', { name: 'Add Vendor' }).click();
+  let vendorCode = getRandomValuesAsPerDataType("number").toString();
+  let vendorName = 'newTestVendor'+vendorCode;
+  // vendorName = "newTestVendor330";
+  await page.locator("//label[text()='Name ']/..//input").fill(vendorName);
+  await page.locator("//label[text()='Vendor Code ']/..//input").fill(vendorCode);
+
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill(vendorName);
+  const vrows = await page.locator('table tbody tr');
+  let vrowcnt = await vrows.count();
+  console.log("vrows = "+vrowcnt);
+  expect(vrowcnt).toBe(1);
+
+  let fileToUpload = "stockhom2.pdf";
+  await page.click("//div[text()='Invoices ']");
+  await page.getByLabel('Search card').fill(folderName);
+  await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  await page.waitForTimeout(12000);
+
+  //Delete invoice if already present 
+  await page.getByPlaceholder('Search card').fill(fileToUpload.replace(".pdf",""));
+  await page.getByPlaceholder('Search card').press('Enter');
+  await page.waitForTimeout(1000);
+  await page.locator("//input[@role='checkbox']").click();
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Yes, delete file' }).click();
+
+  uploadInvoice(page,'./FilesToUpload/'+fileToUpload);
+  await page.waitForTimeout(120000);
+  await waitForAnalyzedSatatus(page,fileToUpload);
+ 
+  //temp
+  // await page.getByPlaceholder('Search card').fill(fileToUpload);
+  // await page.getByPlaceholder('Search card').press('Enter');
+  ////
+
+
+  let rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  let statues = await getGridColumnTextsByindex(page, "3",rows);
+  let fileNames = await getGridColumnTextsByindex(page, "2",rows);
+  console.log("statues="+statues);
+  console.log("fileNames="+fileNames);
+  await rows.nth(0).click();
+  await page.waitForTimeout(12000);
+  // if(await page.getByRole('button', { name: 'Change vendor' }).isVisible()){
+    await page.getByRole('button', { name: 'Change vendor' }).click();
+  // }
+ 
+  await page.locator('button[aria-label="append icon"]').click();
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill(vendorName);
+  await page.getByText(vendorName).click();
+
+  //Identification rules
+  const input_cb = await page.locator('//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//input');
+  let identificationRuleCnt = await input_cb.count();
+  console.log("identificationRuleCnt-- "+identificationRuleCnt);
+  const actualArray = [];
+  for(let i=1;i<=identificationRuleCnt;i++){
+    
+    await page.waitForTimeout(1000);
+    const checkbox = await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//input[@role="checkbox"])['+i+']');
+    const isChecked = await checkbox.isChecked();
+    if (isChecked) {
+      console.log('✅ Checkbox is already checked');
+    } else {
+      console.log('❌ Checkbox is NOT checked');
+      await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//input[@role="checkbox"])['+i+']').click({ force: true });
+    }
+    // console.log("chk text= "+await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//label)['+i+']').innerText());
+    actualArray.push(await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//label)['+i+']').innerText());
+  }
+  await page.locator('button').filter({ hasText: /^Save$/ }).click();
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'Save' }).click();
+  if(await page.getByRole('button', { name: 'SAVE ANYWAYS' }).isVisible()){
+    await page.getByRole('button', { name: 'SAVE ANYWAYS' }).click();
+  }
+
+  await page.locator('.buttons').click();
+  await page.waitForTimeout(1000);
+
+  await page.click("//div[text()='Invoices']");
+  await page.getByRole('link', { name: 'Vendors' }).click();
+  await page.waitForTimeout(1000);
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill(vendorName);
+ 
+  await page.locator('table tbody tr').hover();
+  const button = page.locator('button:has(i.mdi-pencil-outline)');
+  await button.waitFor({ state: 'visible' });
+  await button.click();
+
+  await page.getByRole('tab', { name: 'Identification Rules' }).click();
+  await page.waitForTimeout(1200);
+  const irrows = await page.locator("//div[@class='v-window-item v-window-item--active']//table//tbody//tr");
+  const rowCount = await irrows.count();
+  console.log("rowCount== "+rowCount);
+  const expectedArray = [];
+  for (let i = 0; i < rowCount; i++) {
+    const row = irrows.nth(i);
+   
+    const firstCellText = await row.locator('td:nth-child(1) p').innerText();
+    const secondCellText = await row.locator('td:nth-child(2) p').innerText();
+
+    // console.log(`Row ${i + 1}:`, firstCellText, ':', secondCellText);
+    expectedArray.push(firstCellText.trim()+": "+secondCellText.trim());
+  
+  }
+  console.log("-------------------------------------");
+  console.log(actualArray);
+  console.log(expectedArray);
+  for (const item of actualArray) {
+    console.log("item-- "+item);
+    expect(expectedArray).toContain(item); // Will fail if item is missing from array2
+  }
 });
 
 
