@@ -1,0 +1,12 @@
+TCID,folder,invoiceName,moveToFolder,type,fieldName,value
+T1,Spend 2.0,PDF Invoice Example.pdf,,,,
+T2,Spend 2.0,PDF Invoice Example.pdff,,,,
+T3,Automation Testing By playwright2.0,williams.pdf,,,,
+T4,Automation Testing By playwright2.0,Split_2_Reed.pdf,Spend 2.0,,,
+T5,Automation Testing By playwright2.0,williams.pdf,,,,
+T6,Automation Testing By playwright2.0,williams.pdf,,invoice,Invoice_Number__standard,SO-017707-1
+T6,Automation Testing By playwright2.0,williams.pdf,,line_item,Unit Price,11.35
+T6,Automation Testing By playwright2.0,williams.pdf,,allocation,Amount__standard,64.24
+T7,Automation Testing By playwright2.0,Split_1_Reed.pdf,,,,
+T8,Automation Testing By playwright2.0,williams.pdf,,,,
+T9,Automation Testing By playwright2.0,williams.pdf,,,,

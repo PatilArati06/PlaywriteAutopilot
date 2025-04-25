@@ -3,32 +3,23 @@
 const { test, expect, request } = require('@playwright/test');
 // const { chromium } = require('playwright');
 const { login,fetchRules,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices,fetchInvoiceLineItemFields,fetchWorkflowByInvoiceId,getWorkflowDefination} = require('./Methods/common');
+const {UseAIDataParser} = require('./Methods/csv_data_parser');
 const { error } = require('console');
 
-// let browser,page;
-var TestDataGoogleSearch = new Map();
-
-(async () => {
-  TestDataGoogleSearch = await createMapOfMap('TestDataGoogleSearch.csv', 'TCID');
-  
-})();
-
-var AlllineItemsFields = [];
+let testData;
 test.beforeEach(async ({page}) => {
   await login(page, 'dev');
-  (async () => {
-    AlllineItemsFields = await createArrayOfMap('Handshake_Construction_lineItemsFields.csv');
-    
-  })();
-  
+  testData = await UseAIDataParser('invoiceDetailsData.csv', 'TCID');
 });
 
 
 
-  test('4. verify workflow transition', async({ page })=>{
-    const fileName = 'PDF Invoice Example.pdf';
-    const folderName = 'Spend 2.0';
+  test('T1. verify workflow transition', async({ page })=>{
     
+    const exData = testData["T1"];
+
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -128,10 +119,11 @@ test.beforeEach(async ({page}) => {
   }
   return null;
 }
-  test('5. verify reanalyze button (Reanalyze without impacting workflow)', async({ page })=>{
-    const fileName = 'PDF Invoice Example.pdf';
-    const folderName = 'Spend 2.0';
-    
+  test('T2. verify reanalyze button (Reanalyze without impacting workflow)', async({ page })=>{
+    const exData = testData["T2"];
+
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -169,10 +161,10 @@ test.beforeEach(async ({page}) => {
         await page.waitForTimeout(10000);
         console.log("Successfully 'Reanalyze'.");
   });
-  test('5.1. verify reanalyze button (Reanalyze & reset workflow)', async({ page })=>{
-    const fileName = 'Construction Invoice_Table 2 NEW.pdf';
-    const folderName = 'Spend 2.0';
-    
+  test('T3. verify reanalyze button (Reanalyze & reset workflow)', async({ page })=>{
+    const exData = testData["T3"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -191,18 +183,6 @@ test.beforeEach(async ({page}) => {
     const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
     await rows.nth(0).click();
     await page.waitForTimeout(10000);
-    // const url = await page.url();
-
-    // // Use regex to extract the invoice ID
-    // const invoiceIdMatch = url.match(/invoices\/([a-f0-9-]+)/i);
-    // var workflowId ='';
-    // if (invoiceIdMatch && invoiceIdMatch[1]) {
-    //   const invoiceId = invoiceIdMatch[1];
-    //   console.log("Invoice ID:", invoiceId);
-    //   const data = await fetchWorkflowByInvoiceId(invoiceId);
-    //   workflowId = data.tasks[0].workflow_id;
-    // }
-    // await page.waitForTimeout(1000);
     await page.locator('button:has(path[d*="M13.6952 13H13.1619"])').click();
    
     await page.waitForTimeout(1000);
@@ -222,25 +202,17 @@ test.beforeEach(async ({page}) => {
         await expect(
           page.locator('div[role="row"]', { hasText: fileName }).locator('span:text("Processing")')
         ).toBeVisible();
-    //     await page.waitForTimeout(50000);
-    //     await page.getByPlaceholder('Search card').fill(fileName);
-    // await page.getByPlaceholder('Search card').press('Enter');
-    // await page.waitForTimeout(10000);
-    //     const nextStep = await getFirstWorkflowStepName(workflowId);
-    //     await page.waitForTimeout(1000);
-    //     await expect(
-    //       page.locator('div[role="row"]', { hasText: fileName }).getByText(nextStep)
-    //     ).toBeVisible();
         console.log("Successfully 'Reanalyze & reset workflow'.");
   });
   function extractFolderUrl(fullUrl) {
     const match = fullUrl.match(/(.*folders-v2\/[^/]+)/);
     return match ? match[1] : fullUrl;
   }
-  test('6. verify move invoice button', async({ page })=>{
-    const fileName = 'PDF Invoice Example.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
-    
+  test('T4. verify move invoice button', async({ page })=>{
+    const exData = testData["T4"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
+    const destinationFolder = exData.moveToFolder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -265,7 +237,6 @@ test.beforeEach(async ({page}) => {
     await page.waitForTimeout(1000);
     const popup = page.locator('text=Move Invoices');
     if (await popup.isVisible()) {
-      const destinationFolder = "Spend 2.0";
       const input = page.locator('input[placeholder="Select Folder"]');
       await input.click();
       
@@ -312,10 +283,10 @@ test.beforeEach(async ({page}) => {
 
 
 
-  test('6. verify approvers button', async({ page })=>{
-    const fileName = 'williams.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
-    
+  test('T5. verify approvers button', async({ page })=>{
+    const exData = testData["T5"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -394,14 +365,17 @@ test.beforeEach(async ({page}) => {
       console.log("❌ Popup is not open");
     }
   });
-  test.only('7. verify USE AI button', async({ page })=>{
-    const fileName = 'williams.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
+  test.only('T6. verify USE AI button', async({ page })=>{
+    
+    const exData = testData["T6"];
+
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
     await page.getByLabel('Search card').fill(folderName);
     await page.locator("//strong[normalize-space()='"+folderName+"']").click();
-    // let fileToSearch = fileName.replace(".pdf","");
+    
     await page.waitForTimeout(10000);
     await page.getByRole('button', { name: 'All' }).click();
     await page.waitForTimeout(10000);
@@ -423,9 +397,10 @@ test.beforeEach(async ({page}) => {
       let fileReady = false;
       while (retries < maxRetries && !fileReady) {
         // Step 1: Search the file
+        
         await page.getByPlaceholder('Search card').fill(fileName);
         await page.getByPlaceholder('Search card').press('Enter');
-        await page.waitForTimeout(5000); // wait for results to load
+        //await page.waitForTimeout(2000); // wait for results to load
         const fileRow = page.locator('div[role="row"]', { hasText: fileName });
         const isProcessing = await fileRow.locator('span:text("Processing")').isVisible().catch(() => false);
         if (!isProcessing) {
@@ -434,20 +409,8 @@ test.beforeEach(async ({page}) => {
           const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
     await rows.nth(0).click();
     await page.waitForTimeout(10000);
-    const fieldName1 = TestDataGoogleSearch.get('7').get('fieldName1');
-    const value1 = TestDataGoogleSearch.get('7').get('value1');
-    const expectedValues ={
-      invoice: [
-        // @ts-ignore
-        {fieldName:'fieldName1',value:'value1'}
-      ],
-      line_item: [
-        {fieldName: 'Unit Price', value: '11.35'}
-      ],
-      allocation: [
-        {fieldName: 'Amount__standard', value: '64.24'}
-      ]
-    };
+    
+    const expectedValues = exData.expectedValues;
     if('invoice' in expectedValues)
     {
       await checkInSummeryTab(page,expectedValues);
@@ -461,65 +424,65 @@ test.beforeEach(async ({page}) => {
     }
         } else {
           // Still processing – wait and retry
-          console.log(`:hourglass_flowing_sand: File "${fileName}" is still processing... retrying (${retries + 1}/${maxRetries})`);
-          retries++;
           await page.waitForTimeout(20000); // optional delay between retries
+          console.log(`File "${fileName}" is still processing... retrying (${retries + 1}/${maxRetries})`);
+          retries++;
         }
       }
       await page.waitForTimeout(1000);
     } else {
-      console.log(":x: Popup is not open");
+      console.log("Popup is not open");
     }
   });
   async function  checkInSummeryTab(page,expectedValues)
   {
-    console.log(":arrows_counterclockwise: Switching to 'Summary tab'...");
+    console.log("Switching to 'Summary tab'...");
     await page.locator("//div[@tab-value='summary']").click();
     await page.waitForTimeout(1000);
   for (const item of expectedValues.invoice) {
-    console.log(`:page_facing_up: fieldName: ${item.fieldName}, value: ${item.value}`);
+    console.log(`fieldName: ${item.fieldName}, value: ${item.value}`);
     const value = await page
     .locator(`input[column_name="${item.fieldName}"]`)
     .inputValue();
-    console.log(":inbox_tray: Extracted Value (XPath):", value);
+    console.log("Extracted Value (XPath):", value);
     expect(value).toBe(item.value);
   }
   }
   async function  checkInLineItem(page,expectedValues)
   {
-    console.log(":arrows_counterclockwise: Switching to 'Line item tab'...");
+    console.log("Switching to 'Line item tab'...");
     await page.locator("//div[@tab-value='line_items']").click();
     await page.waitForTimeout(10000);
     const isVisible = await page.locator('h4:has-text("Table View of Line Items")').isVisible();
     if (!isVisible) {
-      console.log(":arrows_counterclockwise: Switching to 'Table View'...");
+      console.log("Switching to 'Table View'...");
       const tableViewButton = page.locator('button:has-text("Table View")');
       await tableViewButton.click();
       await page.waitForSelector('h4:has-text("Table View of Line Items")');
-      console.log(":white_check_mark: Switched to 'Table View'.");
+      console.log("Switched to 'Table View'.");
     }
 for (const item of expectedValues.line_item) {
-  console.log(`:page_facing_up: fieldName: ${item.fieldName}, value: ${item.value}`);
+  console.log(`fieldName: ${item.fieldName}, value: ${item.value}`);
   const value = await page
   .locator(`[col-id="${item.fieldName}"]`)
   .nth(1) // this ensures we get the first matching cell (first row)
   .locator('div.d-flex') // target the inner <div> that contains the value
   .innerText();
-  console.log(":inbox_tray: Extracted Value (XPath):", value);
+  console.log("Extracted Value (XPath):", value);
   expect(value).toBe(item.value);
 }
   }
   async function  checkInAllocation(page,expectedValues)
   {
-    console.log(":arrows_counterclockwise: Switching to 'Allocations tab'...");
+    console.log("Switching to 'Allocations tab'...");
     await page.locator("//div[@tab-value='allocations']").click();
     await page.waitForTimeout(1000);
     for (const item of expectedValues.allocation) {
-      console.log(`:page_facing_up: fieldName: ${item.fieldName}, value: ${item.value}`);
+      console.log(`fieldName: ${item.fieldName}, value: ${item.value}`);
       const xpath = `//td[contains(@id, "_${item.fieldName}")]//input[@type="text"]`;
       const element = await page.$(xpath);
       const value = await element?.inputValue();
-      console.log(":inbox_tray: Extracted Value (XPath):", value);
+      console.log("Extracted Value (XPath):", value);
       expect(value).toBe(item.value);
     }
     await page.waitForTimeout(10000);
@@ -527,10 +490,10 @@ for (const item of expectedValues.line_item) {
 
 
 
-  test('8. verify Delete invoice button', async({ page })=>{
-    const fileName = 'Sliced Invoices.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
-    
+  test('T7. verify Delete invoice button', async({ page })=>{
+    const exData = testData["T7"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
    
     await page.waitForTimeout(12000);
     await page.getByRole('link', { name: 'Invoices' }).click();
@@ -572,9 +535,10 @@ for (const item of expectedValues.line_item) {
     }
   });
 
-  test('9. verify downlaod invoice button', async({ page })=>{
-    const fileName = 'Sliced Invoices.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
+  test('T8. verify downlaod invoice button', async({ page })=>{
+    const exData = testData["T8"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
     
    
     await page.waitForTimeout(12000);
@@ -618,9 +582,10 @@ for (const item of expectedValues.line_item) {
     }
   });
 
-  test('10. verify invoice split button(switch to manual)', async({ page })=>{
-    const fileName = 'ServiceInvoice_0167040 NEW.pdf';
-    const folderName = 'Automation Testing By playwright2.0';
+  test('T9. verify invoice split button(switch to manual)', async({ page })=>{
+    const exData = testData["T9"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
     
    
     await page.waitForTimeout(12000);
