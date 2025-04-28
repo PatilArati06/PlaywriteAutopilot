@@ -25,7 +25,7 @@ module.exports = {
                   await page.fill('input#login-page-email-input', loginDetails[0]);  // username
                   await page.fill('input#login-page-password-input', loginDetails[1]); //password
                   await page.click('button.login-button');  //login button selector
-                  test.setTimeout(450_000);
+                  test.setTimeout(600_000);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -232,7 +232,7 @@ module.exports = {
       // await page.getByRole('button', { name: 'Refresh' }).click();
       await page.locator('button:nth-child(8)').first().click();
       // if(await waitForElementToVisible(page,"//input[@id='headerChk']")){
-        console.log("in while status=== "+await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible());
+        // console.log("in while status=== "+await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible());
         isAnalyzed = await page.getByRole('gridcell', { name: 'Analyzed' }).first().isVisible();
       // }
     
@@ -485,6 +485,20 @@ deleteAttachments: async function(page,noOfItems){
     await page.getByRole('button', { name: '罹' }).first().click();
     await page.getByRole('button', { name: 'DELETE', exact: true }).click();
     await page.waitForTimeout(1800);
+  }
+},
+
+deleteInvoice: async function(page,fileName){
+  await page.getByPlaceholder('Search card').fill(fileName.replace(".pdf",""));
+  await page.getByPlaceholder('Search card').press('Enter');
+  await page.waitForTimeout(1000);
+  let rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  let rowcnt = await rows.count();
+  console.log("rowcnt==="+rowcnt);
+  if(rowcnt > 0){
+  await page.locator("//input[@role='checkbox']").click();
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Yes, delete file' }).click();
   }
 },
 

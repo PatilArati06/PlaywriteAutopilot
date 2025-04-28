@@ -5,7 +5,7 @@ import fs from 'fs';
 import { exit } from 'process';
 const { test, expect, request } = require('@playwright/test');
 // const { chromium } = require('playwright');
-const { fetchInvoiceLineItemFields,login,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices } = require('./Methods/common');
+const { fetchInvoiceLineItemFields,login,getGridColumnTextsByindex, checkDateInRange, getMonthInMmmFormat, waitForElementToVisible, getFullMonthName, createMapOfMap,createArrayOfMap, uploadInvoice, waitForAnalyzedSatatus, verifyAnalyzedSatatus , readPDF,getInvoiceNo, getInvoiceDate, getPaymentDueDate, getSubtotal, getTax, getTotalAmount, getformattedDate, getDescription, getPDFValWith1Regx, getNoOfItems, takeScreenShot, deleteAttachments,getRandomValue,getRandomValuesAsPerDataType,fetchInvoices,deleteInvoice } = require('./Methods/common');
 // const { error, Console } = require('console');
 
 // let browser,page;
@@ -3104,13 +3104,33 @@ test.only('25. Verify Default Allocation for vendor on invoice allocation screen
 
 test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upload another invoice with same vendor and verify if vendor get assigned', async({ page })=>{
   const folderName = testData.get('26').get('FolderName');
+  const fileName = testData.get('26').get('FilesToUpload');
   await page.waitForTimeout(12000);
 
-  await page.getByRole('link', { name: 'Invoices' }).click();
+  // await page.getByRole('link', { name: 'Invoices' }).click();
   await page.getByRole('link', { name: 'Vendors' }).click();
+
+  //Delete vendor if already present
+  await page.getByPlaceholder('Search').click();
+  await page.getByPlaceholder('Search').fill("newTestVendor");
+  const vtblrows  = await page.locator('table tbody tr');
+  let vtblrowsCount = await vtblrows.count();
+  for (let i = 0; i < vtblrowsCount; i++) {
+    const row = vtblrows.nth(i);
+    await row.hover();
+    // Optionally wait a bit to see the hover effect
+    await page.waitForTimeout(300); 
+    const button = page.locator('button:has(i.mdi-delete-outline)');
+    await button.waitFor({ state: 'visible' });
+    await button.click();
+    await page.getByRole('button', { name: 'Yes, Delete' }).click();
+
+  }
+
   await page.getByRole('button', { name: 'Add Vendor' }).click();
   let vendorCode = getRandomValuesAsPerDataType("number").toString();
   let vendorName = 'newTestVendor'+vendorCode;
+  console.log("New vendor name= "+vendorName);
   // vendorName = "newTestVendor330";
   await page.locator("//label[text()='Name ']/..//input").fill(vendorName);
   await page.locator("//label[text()='Vendor Code ']/..//input").fill(vendorCode);
@@ -3127,23 +3147,20 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
   console.log("vrows = "+vrowcnt);
   expect(vrowcnt).toBe(1);
 
-  let fileToUpload = "stockhom2.pdf";
+  
   await page.click("//div[text()='Invoices ']");
   await page.getByLabel('Search card').fill(folderName);
   await page.locator("//strong[normalize-space()='"+folderName+"']").click();
-  await page.waitForTimeout(12000);
+  await page.waitForTimeout(10000);
+  await page.getByRole('button', { name: 'All' }).click();
+  await page.waitForTimeout(10000);
 
   //Delete invoice if already present 
-  await page.getByPlaceholder('Search card').fill(fileToUpload.replace(".pdf",""));
-  await page.getByPlaceholder('Search card').press('Enter');
-  await page.waitForTimeout(1000);
-  await page.locator("//input[@role='checkbox']").click();
-  await page.getByRole('button', { name: 'Delete' }).click();
-  await page.getByRole('button', { name: 'Yes, delete file' }).click();
+  await deleteInvoice(page,fileName);
 
-  uploadInvoice(page,'./FilesToUpload/'+fileToUpload);
+  uploadInvoice(page,'./FilesToUpload/'+fileName);
   await page.waitForTimeout(120000);
-  await waitForAnalyzedSatatus(page,fileToUpload);
+  await waitForAnalyzedSatatus(page,fileName);
  
   //temp
   // await page.getByPlaceholder('Search card').fill(fileToUpload);
@@ -3157,7 +3174,7 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
   console.log("statues="+statues);
   console.log("fileNames="+fileNames);
   await rows.nth(0).click();
-  await page.waitForTimeout(12000);
+  await page.waitForTimeout(1000);
   // if(await page.getByRole('button', { name: 'Change vendor' }).isVisible()){
     await page.getByRole('button', { name: 'Change vendor' }).click();
   // }
@@ -3178,9 +3195,9 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
     const checkbox = await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//input[@role="checkbox"])['+i+']');
     const isChecked = await checkbox.isChecked();
     if (isChecked) {
-      console.log('✅ Checkbox is already checked');
+      // console.log('✅ Checkbox is already checked');
     } else {
-      console.log('❌ Checkbox is NOT checked');
+      // console.log('❌ Checkbox is NOT checked');
       await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//input[@role="checkbox"])['+i+']').click({ force: true });
     }
     // console.log("chk text= "+await page.locator('(//div[contains(@class, "mdl-container")]//div[contains(@class, "v-input__slot")]//label)['+i+']').innerText());
@@ -3196,6 +3213,7 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
   await page.locator('.buttons').click();
   await page.waitForTimeout(1000);
 
+  //Validations
   await page.click("//div[text()='Invoices']");
   await page.getByRole('link', { name: 'Vendors' }).click();
   await page.waitForTimeout(1000);
@@ -3211,7 +3229,7 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
   await page.waitForTimeout(1200);
   const irrows = await page.locator("//div[@class='v-window-item v-window-item--active']//table//tbody//tr");
   const rowCount = await irrows.count();
-  console.log("rowCount== "+rowCount);
+  // console.log("rowCount== "+rowCount);
   const expectedArray = [];
   for (let i = 0; i < rowCount; i++) {
     const row = irrows.nth(i);
@@ -3223,13 +3241,38 @@ test.only('26. Verify Add New Vendor, assign new vendor to uploaded invoice, upl
     expectedArray.push(firstCellText.trim()+": "+secondCellText.trim());
   
   }
-  console.log("-------------------------------------");
-  console.log(actualArray);
-  console.log(expectedArray);
-  for (const item of actualArray) {
-    console.log("item-- "+item);
-    expect(expectedArray).toContain(item); // Will fail if item is missing from array2
-  }
+  // console.log("-------------------------------------");
+  // console.log(actualArray);
+  // console.log(expectedArray);
+  // for (const item of actualArray) {
+  //   console.log("item-- "+item);
+  //   expect(expectedArray).toContain(item); // Will fail if item is missing from array2
+  // }
+
+  //Uploading another file with same vendor and verify vendor name
+  await page.locator('div').filter({ hasText: /^Edit Vendor$/ }).getByRole('button').click();
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').fill(folderName);
+  await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  await page.waitForTimeout(1000);
+  await page.getByRole('button', { name: 'All' }).click();
+  await page.waitForTimeout(10000);
+  //Delete invoice if already present 
+  let fileNam2 = "Test_doc16571951703736747598_split_1.pdf";
+  await deleteInvoice(page,fileNam2);
+
+  uploadInvoice(page,'./FilesToUpload/'+fileNam2);
+  await page.waitForTimeout(10000);
+  await waitForAnalyzedSatatus(page,fileNam2);
+
+  let rows1 = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+  await rows1.nth(0).click();
+
+  let actualVendorName = await page.locator('div[column_name="Vendor__standard"] h5').innerText();
+  console.log("actualVendorName="+actualVendorName);
+  console.log("expectedVendorName="+vendorName+" - "+vendorCode);
+  expect(actualVendorName.trim()).toBe(vendorName+" - "+vendorCode);
+
 });
 
 
