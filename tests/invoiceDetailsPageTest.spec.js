@@ -365,7 +365,7 @@ test.beforeEach(async ({page}) => {
       console.log("❌ Popup is not open");
     }
   });
-  test.only('T6. verify USE AI button', async({ page })=>{
+  test('T6. verify USE AI button', async({ page })=>{
     
     const exData = testData["T6"];
 
@@ -670,5 +670,67 @@ expect(rowCount).toBeGreaterThan(0);
       }
     } else {
       console.log("❌ Popup is not open");
+    }
+  });
+
+  test.only('T10. Add new rules', async({ page })=>{
+    const exData = testData["T10"];
+    //const fileName = exData.invoiceName;
+    //const folderName = exData.folder;
+    
+   
+    
+   
+    await page.getByText('Briq Tools', { exact: true }).click();
+    await page.getByRole('link', { name: 'Autopilot Config' }).click();
+    await page.waitForTimeout(12000);
+    await page.locator('div[role="tab"]:has-text("Rules engine")').click();
+    await page.waitForTimeout(1000);
+    await page.getByRole('button', { name: 'Rules Engine Settings' }).click();
+    await page.waitForTimeout(1000);
+    await page.getByRole('button', { name: 'Create Rule' }).click();
+    await page.getByPlaceholder('Enter name').fill('Rule by automation');
+
+    await page.locator('input[placeholder="Type"]').click();
+    await page.getByText('Assign value', { exact: true }).click();
+
+    await page.locator('input#input-1009[placeholder="Select Type"]').click();
+    await page.getByText('Invoice Data', { exact: true }).click();
+    
+    await page.locator('input#input-1014[placeholder="Select Field"]').click();
+    await page.getByText('Total Amount', { exact: true }).click();
+
+    await page.locator('input[placeholder="Select Value"]').click();
+    await page.getByText('Greater Than', { exact: true }).click();
+
+    await page.locator('label:has-text("COMPARE WITH")').locator('..').locator('input[placeholder="Select Type"]').click();
+    await page.getByText('User Entry', { exact: true }).click();
+
+    // await page.locator('input#input-707[placeholder="Select Field"]').click();
+    // await page.getByText('Amount', { exact: true }).click();
+    await page.locator('input#input-801[placeholder="Value"]').fill('0');
+
+    await page.locator('input#input-716[placeholder="Destination"]').click();
+    await page.getByText('Allocations', { exact: true }).click();
+
+    await page.locator('input#input-721[placeholder="Field"]').click();
+    await page.getByText('Amount', { exact: true }).click();
+
+    await page.locator('input#input-724[placeholder="Field"]').click();
+    await page.getByText('User Entry', { exact: true }).click();
+
+    await page.locator('input#input-834[placeholder="Value"]').fill('100');
+
+    await page.getByRole('button', { name: 'Save' }).click();
+    await page.waitForTimeout(1000);
+    await page.locator('input#input-507[placeholder="Search"]').fill('Rule by automation');
+    await page.waitForTimeout(1000);
+    const rowExists = await page.locator('table tbody tr').hasText('Rule by automation');
+
+    // Assert if the row exists
+    if (rowExists) {
+      console.log('Row found');
+    } else {
+      console.log('Row not found');
     }
   });
