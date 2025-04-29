@@ -40,14 +40,23 @@ const filePath = path.resolve(__dirname,'..', fileName)
   return result;
 }
 
-async function RuleEngineDataParser(fileName, keyColumn) {
+async function RuleEngineDataParser(fileName, tcid) {
   const filePath = path.resolve(__dirname,'..', fileName)
     const csvContent = fs.readFileSync(filePath);
   
-    return parse(csvContent, {
+    const records = parse(csvContent, {
       columns: true,
       skip_empty_lines: true,
     });
+  
+    const record = records.find(row => row.TCID === tcid);
+  if (!record) throw new Error(`TCID ${tcid} not found`);
+
+  // Parse JSON strings
+  record.conditions = JSON.parse(record.conditions);
+  record.assignments = JSON.parse(record.assignments);
+
+  return record;
   }
 
 

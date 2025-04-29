@@ -1,3 +1,12 @@
+TCID,ruleName,ruleType,conditionType,conditions,assignments
+T1,Rule from CSV multiple conditions 2,Create Allocation,All,"[
+  {""dataSource"":""Invoice Data"",""field1"":""Total Amount"",""operator"":""Greater Than"",""dateOption"":""User Entry"",""compareWith"":""Allocations"",""object"":""User Entry"",""field2"":""Amount"",""value1"":""100""},
+  {""dataSource"":""Invoice Data"",""field1"":""Tax"",""operator"":""Less Than"",""dateOption"":""User Entry"",""compareWith"":""Allocations"",""object"":""User Entry"",""field2"":""Tax"",""value1"":""10""}
+]","[
+  {""destination"":""Allocations"",""target"":""Amount"",""assignValue"":""Invoice Data"",""field"":""Total Amount"",""value"":""500"",""message"":""msg1""},
+  {""destination"":""Allocations"",""target"":""Tax"",""assignValue"":""User Entry"",""field"":""Tax"",""value"":""25"",""message"":""msg2""}
+]"
 
-TCID,ruleName,ruleType,dataSource,field1,operator,dateOption,compareWith,object,field2,value1,destination,target,assignValue,field3,value2
-T1,Rule by automation using csv,Create Allocation,Invoice Data,Total Amount,Greater Than,User Entry,Allocations,User Entry,Amount,0,Allocations,Amount,Allocations,Amount,100
+T2,Rule from CSV Business Exception,Business Exception,All,"[]","[]"
+T3,Rule by automation 1,Business Exception,All,"[]","[]"
+T4,Rule by automation 2,,,"[]","[]"
