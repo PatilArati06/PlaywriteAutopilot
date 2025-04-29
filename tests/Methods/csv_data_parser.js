@@ -7,7 +7,7 @@ const { parse } = require('csv-parse/sync');
  * Each key has folder, invoiceName, and expectedValues (grouped by type)
  */
 async function UseAIDataParser(fileName, keyColumn) {
-const filePath = path.resolve(__dirname, '..', '..', fileName)
+const filePath = path.resolve(__dirname,'..', fileName)
   const csvContent = fs.readFileSync(filePath);
 
   const records = parse(csvContent, {
@@ -40,6 +40,19 @@ const filePath = path.resolve(__dirname, '..', '..', fileName)
   return result;
 }
 
+async function RuleEngineDataParser(fileName, keyColumn) {
+  const filePath = path.resolve(__dirname,'..', fileName)
+    const csvContent = fs.readFileSync(filePath);
+  
+    return parse(csvContent, {
+      columns: true,
+      skip_empty_lines: true,
+    });
+  }
+
+
+
 module.exports = {
-    UseAIDataParser
+    UseAIDataParser,
+    RuleEngineDataParser
 };

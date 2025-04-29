@@ -1,0 +1,3 @@
+
+TCID,ruleName,ruleType,dataSource,field1,operator,dateOption,compareWith,object,field2,value1,destination,target,assignValue,field3,value2
+T1,Rule by automation using csv,Create Allocation,Invoice Data,Total Amount,Greater Than,User Entry,Allocations,User Entry,Amount,0,Allocations,Amount,Allocations,Amount,100

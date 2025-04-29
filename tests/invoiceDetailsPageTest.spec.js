@@ -9,7 +9,7 @@ const { error } = require('console');
 let testData;
 test.beforeEach(async ({page}) => {
   await login(page, 'dev');
-  testData = await UseAIDataParser('invoiceDetailsData.csv', 'TCID');
+  testData = await UseAIDataParser('./mock-data/invoiceDetailsData.csv', 'TCID');
 });
 
 
@@ -281,8 +281,6 @@ test.beforeEach(async ({page}) => {
 
   });
 
-
-
   test('T5. verify approvers button', async({ page })=>{
     const exData = testData["T5"];
     const fileName = exData.invoiceName;
@@ -488,8 +486,6 @@ for (const item of expectedValues.line_item) {
     await page.waitForTimeout(10000);
   }
 
-
-
   test('T7. verify Delete invoice button', async({ page })=>{
     const exData = testData["T7"];
     const fileName = exData.invoiceName;
@@ -535,7 +531,7 @@ for (const item of expectedValues.line_item) {
     }
   });
 
-  test('T8. verify downlaod invoice button', async({ page })=>{
+  test.only('T8. verify downlaod invoice button', async({ page })=>{
     const exData = testData["T8"];
     const fileName = exData.invoiceName;
     const folderName = exData.folder;
@@ -671,142 +667,4 @@ expect(rowCount).toBeGreaterThan(0);
     } else {
       console.log("❌ Popup is not open");
     }
-  });
-
-  test.only('T10. Add new rules', async({ page })=>{
-    const exData = testData["T10"];
-    //const fileName = exData.invoiceName;
-    //const folderName = exData.folder;
-    
-   
-    
-   
-    await page.getByText('Briq Tools', { exact: true }).click();
-    await page.getByRole('link', { name: 'Autopilot Config' }).click();
-    await page.waitForTimeout(400);
-    await page.locator('div[role="tab"]:has-text("Rules engine")').click();
-    await page.waitForTimeout(400);
-    await page.getByRole('button', { name: 'Rules Engine Settings' }).click();
-    await page.waitForTimeout(400);
-    await page.getByRole('button', { name: 'Create Rule' }).click();
-    const input = page.getByPlaceholder('Enter name');
-    await input.fill('Rule by automation for allocation');
-    await input.press('Enter');
-    
-    await page.locator('label:has-text("RULE TYPE") + input').click();
-    await page.locator('div[role="option"]:has-text("Create Allocation")').click();
-    await page.waitForTimeout(1000);
-
-    await page.locator('label:has-text("DATA") + input').click();
-    await page.locator('div[role="option"]:has-text("Invoice Data")').click();
-    await page.waitForTimeout(1000);
-    
-  
-    await page.locator('label:has-text("Field") + input').first().click();
-    await page.locator('div[role="option"]:has-text("Total Amount")').click();
-    await page.waitForTimeout(1000);
-
-   
-    await page.locator('label:has-text("OPERATOR") + input').first().click();
-    await page.locator('label:has-text("OPERATOR") + input').first().fill('Greater Than');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=Greater Than').first().click();
-    await page.waitForTimeout(1000);
- 
-
-    const inputDate = page.locator('label:has-text("Date Options") + input');
-
-    if (await inputDate.isVisible()) {
-        await page.locator('label:has-text("Date Options") + input').first().click();
-        await page.locator('label:has-text("Date Options") + input').first().fill('User Entry');
-        await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-        await page.locator('div[role="listbox"]:visible >> text=User Entry').first().click();
-        await page.waitForTimeout(1000);
-    }
-
-    await page.locator('label:has-text("COMPARE WITH") + input').first().click();
-    await page.locator('label:has-text("COMPARE WITH") + input').first().fill('Allocations');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=Allocations').first().click();
-    await page.waitForTimeout(1000);
-
-
-    const inputObject = page.locator('label:has-text("Object") + input');
-
-if (await inputObject.isVisible()) {
-    await page.locator('label:has-text("Object") + input').first().click();
-    await page.locator('label:has-text("Object") + input').first().fill('User Entry');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=User Entry').first().click();
-    await page.waitForTimeout(1000);
-}
-    
-
-    const inputField = page.locator('label:has-text("Field") + input').nth(1);
-    if (await inputField.isVisible()) {
-      await page.locator('label:has-text("Field") + input').nth(1).click();
-      await page.locator('label:has-text("Field") + input').nth(1).fill('Amount');
-      await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-      await page.locator('div[role="listbox"]:visible >> text=Amount').first().click();
-      await page.waitForTimeout(1000);
-    }else{
-      await page.locator('input[placeholder="Value"]').first().fill('0');
-    await page.waitForTimeout(1000);
-    }
-
-    await page.locator('label:has-text("DESTINATION") + input').first().click();
-    await page.locator('label:has-text("DESTINATION") + input').first().fill('Allocations');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=Allocations').first().click();
-    await page.waitForTimeout(1000);
-
-    await page.locator('label:has-text("TARGET") + input').first().click();
-    await page.locator('label:has-text("TARGET") + input').first().fill('Amount');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=Amount').first().click();
-    await page.waitForTimeout(1000);
-
-
-    await page.locator('label:has-text("ASSIGN VALUE") + input').first().click();
-    await page.locator('label:has-text("ASSIGN VALUE") + input').first().fill('Allocations');
-    await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-    await page.locator('div[role="listbox"]:visible >> text=Allocations').first().click();
-  
-    await page.waitForTimeout(1000);
-
-    const inputAssign = await page.locator('label:has-text("ASSIGN VALUE") + input');
-    const selectedValue = await inputAssign.inputValue();
-    if(selectedValue=='User Entry')
-    {
-    await page.locator('input[placeholder="Value"]').nth(1).fill('100');
-    }else{
-      const dropdowns = await page.locator('label:has-text("Field") + input');
-      const visibleCount = await dropdowns.locator(':visible').count();
-      await page.locator('label:has-text("Field") + input').nth(visibleCount-1).click();
-      await page.locator('label:has-text("Field") + input').nth(visibleCount-1).fill('Amount');
-      await page.locator('div[role="listbox"]:visible').first().waitFor({ state: 'visible' });
-      await page.locator('div[role="listbox"]:visible >> text=Amount').first().click();
-      await page.waitForTimeout(1000);
-
-    }
-    await page.waitForTimeout(1000);
-    await page.locator('button.dialog-v2-save-btn.workflows-modal-save-btn.ml-4').click();
-    await page.waitForTimeout(5000);
-    await page.locator('button.dialog-v2-close-btn').click();
-    const popup = page.locator('div.v-dialog.v-dialog--active', { hasText: 'Unsaved changes' });
-
-    if (await popup.isVisible()) {
-      await popup.locator('button:has-text("Save")').click();
-    }
-    
-    
-    await page.waitForTimeout(10000);
-    await page.locator('input[placeholder="Search"]').fill('Rule by automation for allocation');
-    await page.waitForTimeout(3000);
-    const rows = page.locator('table tbody tr', { hasText: 'Rule by automation for allocation' });
-
-    const count = await rows.count();
-    expect(count).toBeGreaterThan(0);
-   
-    await page.waitForTimeout(10000);
   });
