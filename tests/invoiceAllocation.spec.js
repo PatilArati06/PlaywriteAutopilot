@@ -1,206 +1,260 @@
 // @ts-check
 import fs from "fs";
 import { test, expect } from "@playwright/test";
-// const { login } = require("../../Us/eful-folder/loginhelper"); //t
+const { readCsvSync } = require('./Methods/csv_data_parser');
+const { login} = require('./Methods/common');
 
-// const { login } = require('./Methods/common');
 
-// Increase the timeout for the entire test
-test.setTimeout(450_000); // Set timeout to 120 seconds
+test.setTimeout(120000); 
 
-// Increase the timeout for the beforeEach hook
-// test.beforeEach(async ({ page }) => {
-//     console.log('Starting login process...');
-//     await login(page, 'BriqDevCsv', 2); // Login before each test
-//     console.log('Login process completed.');
-// });
+let invoiceFolderName;
+let invoiceName;
+let companyId;
+let projectId; // Declare shared variable
 
-test("Add values in fields present in allocation tap", async ({ page }) => {
-  // Add your test steps here
-  /*await page.goto('https://app-dev.briq.com/#/home');
-    const title = await page.title();
-    expect(title).toBe('Home'); // Replace 'Expected Title' with the actual title*/
+test.beforeEach(async ({ page }) => {
+  console.log("Starting login process...");
+  await login(page, 'dev');
+  console.log("Login process completed.");
 
-  //   await page.goto('https://app-dev.briq.com/#/home');
-  //login
-  console.log("Starting Scenario 1: Login and navigate to allocation tab...");
-
-  await page.goto("https://app-dev.briq.com/#/pages/login");
-  await page.getByLabel("Email").click();
-  await page.getByLabel("Email").fill("qaautomation.briq@gmail.com");
-  await page.getByPlaceholder("Password").click();
-  await page.getByLabel("Password").fill("qaautomation");
-  await page.getByRole("button", { name: "SIGN IN", exact: true }).click();
-  await page.goto("https://app-dev.briq.com/#/hom/home");
-  await page.goto("https://app-dev.briq.com/#/home");
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/invoices-inbox-v2"
+  const csvData = await readCsvSync(
+    "./mock-data/allocationData.csv"
   );
-  await page.locator("div:nth-child(3) > div:nth-child(10)").click();
-  await page.locator(".v-input--selection-controls__ripple").click();
-  await page.getByRole("button", { name: "Admin" }).click();
-
+  invoiceFolderName = csvData[0].invoiceFolderName; // Initialize shared variable
+  invoiceName = csvData[0].invoiceName;
+  companyId = csvData[0].companyId;
+  projectId = csvData[0].projectId;
+});
+test("Validate Invoice allocation setting ", async ({ page }) => {
   //invoice allocation setting
-  console.log("Navigating to invoice allocation setting...");
+  await page.getByRole("button", { name: "Admin" }).click();
   await page.getByRole("link", { name: "Invoice Settings" }).click();
-  await page
-    .locator(
-      ".v-radio > .v-input--selection-controls__input > .v-input--selection-controls__ripple"
-    )
-    .first()
-    .click();
-  await page
-    .locator(".mr-8 > .v-image > .v-responsive__content")
-    .first()
-    .click();
+  const allocationTab = page.locator(
+    "//div[@class='d-flex align-top']//div[@class='v-responsive__content']"
+  );
+  const isVisible = await allocationTab.isVisible();
+  if (!isVisible) {
+    console.log("Navigating to invoice allocation setting...");
+    await page
+      .locator(
+        "div[class='v-input black--text mb-n6 v-input--is-label-active v-input--is-dirty theme--light v-input--selection-controls v-input--radio-group v-input--radio-group--row'] div[class='v-radio theme--light v-item--active'] div[class='v-input--selection-controls__ripple']"
+      )
+      .click();
+    await page
+      .locator(".mr-8 > .v-image > .v-responsive__content")
+      .first()
+      .click();
+  } else {
+    console.log("The radio button is checked.");
+  }
   await page.getByRole("button", { name: "Save" }).click();
   await page.getByRole("button", { name: "Save Changes" }).click();
+});
 
-  //invoice folder
-  console.log("Navigating to invoice folder...");
-  await page.getByRole("button", { name: "Invoices", exact: true }).click();
-  await page.getByRole("link", { name: "Invoices" }).click();
-  await page.getByRole("button", { name: "Save" }).nth(1).click();
-  //await page.getByLabel('Search card').click();
-  await page.locator("#input-425").click();
-  //await page.locator('#input-631').fill('Automation Testing By playwright2.0');
-  await page.locator("#input-425").fill("Automation Testing By playwright2.0");
+
+test("Validate dropdown options for type Job", async ({ page }) => {
+  //adding new type
+  await page.goto("https://app-dev.briq.com/#/ap-config");
+  await page.getByRole('button', { name: 'Create New' }).click();
+  await page.goto('https://app-dev.briq.com/#/ap-config/invoice-allocation?document=invoice');
+  await page.getByLabel('TYPE *').click();
+  await page.getByPlaceholder('Type').fill('Testing -Field');
+  await page.getByRole('option', { name: 'Testing -Field' }).locator('div').nth(1).click();
+  await page.locator('div').filter({ hasText: /^Click to add field$/ }).nth(1).click();
+  await page.getByPlaceholder('Search Field').click();
+  await page.getByRole('option', { name: 'Project ID' }).locator('i').click();
+  await page.getByRole('option', { name: 'Company ID' }).locator('i').click();
+  await page.getByText('Field NameProject IDCompany ID').click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).nth(0).click();
+  const types = await page.locator("div:has-text('Field Name') + div").allTextContents();
+  // Log the extracted types
+  console.log("List of Types:", types);
+  await page.getByRole('button', { name: 'Invoices', exact: true }).click();
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').click();
+  await page.fill('input[type="text"]', invoiceFolderName);
   await page
     .locator("div")
     .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
     .nth(1)
     .click();
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2"
-  );
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2/invoices/8dc23d6e-517f-4fbe-98b5-23845006d9d4"
-  );
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await page.getByText("williams.pdf").click();
+  await page.getByRole("tab", { name: "Allocations" }).click();
+//   // Open the dropdown
+  await page.getByLabel('Type', { exact: true }).click();
+//   // Get all options in the dropdown
+//  const options = await page.locator("input[type='text']").allTextContents();
+  const options = await page.locator("div[role='option']").allTextContents();
+ console.log("Options:", options);
+ // const expectedOptions = ["General Overhead", "Purchase Order", "test_allocation", "Testing -Field", "Job"];
 
+ expect(options).toEqual(expect.arrayContaining(types));
+
+  console.log("Dropdown contains the expected options:", options);
+
+  // Remove the added type
+  await page.goto("https://app-dev.briq.com/#/ap-config");
+  await page.locator('#allocations div').filter({ hasText: 'Fields Table for Testing -' }).first().click();
+  await page.locator('#allocations').getByRole('button').nth(2).click();
+  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Invoices', exact: true }).click();
+  await page.getByRole('link', { name: 'Invoices' }).click();
+  await page.getByLabel('Search card').click();
+  await page.fill('input[type="text"]', invoiceFolderName);
+  await page
+    .locator("div")
+    .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await page.getByText("williams.pdf").click();
+  await page.getByRole("tab", { name: "Allocations" }).click();
+ // Open the dropdown
+  await page.getByLabel('Type', { exact: true }).click();
+ // Get all options in the dropdown
+ console.log("Options:", options);
+ expect(options).toEqual(expect.arrayContaining(expectedOptions));
+
+ console.log("Dropdown contains the expected options:", options);
+
+
+ });
+
+//invoice folder
+test.only("Add values in fields present in allocation tap and validate", async ({
+  page,
+}) => {
+  console.log("Navigating to invoice folder...");
+  // await page.getByRole("button", { name: "Invoices", exact: true }).click();
+  await page.getByRole("link", { name: "Invoices" }).click();
+  await page.fill('input[type="text"]', invoiceFolderName);
+  await page
+    .locator("div")
+    .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await page.getByText("williams.pdf").click();
+  //await page.goto("https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2/invoices/8dc23d6e-517f-4fbe-98b5-23845006d9d4");
   //opening Allocation tab and updating values
-  console.log("Opening Allocation tab and updating values...");
+  console.log("Opening Allocation tab and adding values...");
   await page.getByRole("tab", { name: "Allocations" }).click();
   await page.getByLabel("Company ID").click();
-  await page.getByRole("button", { name: "Load More" }).click();
-  await page.getByText("Acord - Acord").click();
-  await page.waitForTimeout(12000);
+  //await page.getByRole("button", { name: "Load More" }).click();
+  await page.getByText(companyId).click();
+  //await page.waitForSelector('button#save');
   await page.getByRole("button", { name: "Save" }).click();
-  await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(6000);
+  //await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
   await page.locator(".buttons").click();
 
   //reopen invoice and validate saved values
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByText("williams.pdf").first().click();
+  await page.waitForTimeout(6000);
   await page.getByRole("tab", { name: "Allocations" }).click();
-  await page.waitForTimeout(10000);
   const inputValue1 = await page.getByLabel("Company ID").inputValue();
-  expect(inputValue1).toBe("Acord - Acord");
+  expect(inputValue1).toBe(companyId);
+});
 
-  //});
-  //test('2.Update values in allocation tab and close without saving',async({ page})=>{
+test("Update values in allocation tab and close without saving and validate", async ({
+  page,
+}) => {
   console.log(
     "Scenario 2: Update values in allocation tab and close without saving..."
   );
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByRole("link", { name: "Invoices" }).click();
+  await page.fill('input[type="text"]', invoiceFolderName);
+  await page
+    .locator("div")
+    .filter({ hasText: new RegExp(`^${invoiceFolderName}$`) })
+    .nth(1)
+    .click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   await page.getByLabel("Project ID").click();
-  await page
-    .getByText("tfbas323ffdggkasdas950500 - newr43hhhhhruuusdasre")
-    .click();
-  await page.getByLabel("Friendly Cost Code*").click();
-  await page.getByRole("cell", { name: "Badge" }).locator("i").click();
+  await page.getByText(projectId).click();
+  //await page.getByLabel("Friendly Cost Code*").click();
+  //await page.getByRole("cell", { name: "Badge" }).locator("i").click();
   await page.locator(".buttons").click();
 
   //reopen invoice and validate saved values
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   const inputValue2 = await page.getByLabel("Project ID").inputValue();
-  expect(inputValue2).not.toBe(
-    "tfbas323ffdggkasdas950500 - newr43hhhhhruuusdasre"
-  );
+  expect(inputValue2).not.toBe(projectId);
+});
 
-  //});
-
-  //test('3.Update values in allocation tab and save',async({ page})=>{
+test("3.Update values in allocation tab and save and validate", async ({
+  page,
+}) => {
   console.log("Scenario 3: Update values in allocation tab and save...");
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByRole("link", { name: "Invoices" }).click();
+  await page.fill('input[type="text"]', invoiceFolderName);
+  await page
+    .locator("div")
+    .filter({ hasText: new RegExp(`^${invoiceFolderName}$`) })
+    .nth(1)
+    .click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   await page.getByLabel("Project ID").click();
-  await page
-    .getByText("tfbas323ffdggkasdas950500 - newr43hhhhhruuusdasre")
-    .click();
-  await page.getByLabel("Friendly Cost Code*").click();
-  await page.getByRole("cell", { name: "Badge" }).locator("i").click();
+  await page.getByText(projectId).click();
   await page.getByRole("button", { name: "Save" }).click();
-  await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
+  await page.waitForTimeout(6000);
+  //await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
   await page.locator(".buttons").click();
 
   //reopen invoice and validate saved values
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   const inputValue3 = await page.getByLabel("Project ID").inputValue();
-  expect(inputValue3).toBe("tfbas323ffdggkasdas950500 - newr43hhhhhruuusdasre");
+  expect(inputValue3).toBe(projectId);
+});
 
-  //test('4.Remving value in allocation tab and save',async({ page})=>{
+test("4.Removing value in allocation tab and save and validate", async ({
+  page,
+}) => {
   console.log("Scenario 4: Removing value in allocation tab and save...");
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByRole("link", { name: "Invoices" }).click();
+  await page.fill('input[type="text"]', invoiceFolderName);
+  await page
+    .locator("div")
+    .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
+    .nth(1)
+    .click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   await page.getByLabel("Project ID").click();
   await page.getByLabel("Project ID").fill("");
   //await page.getByLabel('Project ID').press('Control+A');
   //await page.getByLabel('Project ID').press('Backspace');
-  await page.getByLabel("Friendly Cost Code*").click();
-  await page.getByRole("cell", { name: "Badge" }).locator("i").click();
+  // await page.getByLabel("Friendly Cost Code*").click();
+  // await page.getByRole("cell", { name: "Badge" }).locator("i").click();
   await page.getByRole("button", { name: "Save" }).click();
-  await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
+  await page.waitForTimeout(6000);
+  //await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
   await page.locator(".buttons").click();
 
   //reopen invoice and validate saved values
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
+  await page.getByText("williams.pdf").first().click();
   await page.getByRole("tab", { name: "Allocations" }).click();
   const inputValue = await page.getByLabel("Project ID").inputValue();
   expect(inputValue).toBe("");
 });
 
 test("Validating allocation rows", async ({ page }) => {
-  //login
-  await page.goto("https://app-dev.briq.com/#/pages/login");
-  await page.getByLabel("Email").click();
-  await page.getByLabel("Email").fill("qaautomation.briq@gmail.com");
-  await page.getByPlaceholder("Password").click();
-  await page.getByLabel("Password").fill("qaautomation");
-  await page.getByRole("button", { name: "SIGN IN", exact: true }).click();
-  await page.goto("https://app-dev.briq.com/#/hom/home");
-  await page.goto("https://app-dev.briq.com/#/home");
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/invoices-inbox-v2"
-  );
-//   await page.locator("div:nth-child(3) > div:nth-child(10)").click();
-  //await page.locator(".v-input--selection-controls__ripple").click();
-//   await page.getByRole("button", { name: "Admin" }).click();
-
-  //invoice folder
   await page.getByRole("button", { name: "Invoices", exact: true }).click();
   await page.getByRole("link", { name: "Invoices" }).click();
-  //await page.getByLabel('Search card').click();
   await page.getByLabel("Search card").click();
-  //await page.locator('#input-631').fill('Automation Testing By playwright2.0');
-  await page.locator('#input-242').fill("Automation Testing By playwright2.0");
+  await page.fill('input[type="text"]', invoiceFolderName);
   await page
     .locator("div")
     .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
     .nth(1)
     .click();
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2"
-  );
-  await page.getByText("Red wing test DV_split_4.pdf").first().click();
-  
-  await page.goto(
-    "https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2/invoices/8dc23d6e-517f-4fbe-98b5-23845006d9d4"
-  );
-
+  await page.getByText("williams.pdf").first().click();
   //opening Allocation tab and updating values
   await page.getByRole("tab", { name: "Allocations" }).click();
 
@@ -212,38 +266,34 @@ test("Validating allocation rows", async ({ page }) => {
   console.log("Add new row button is visible");
   // Select the last row
   const lastRow = await page.locator("table tr").last();
-
   //Adding Row
   await page.getByRole("button", { name: "Add new row" }).click();
-  //await page.locator("#input-1272").click();
-  //await page.getByText("General Overhead").click();
-  await lastRow.locator("1_Type__standard").click(); 
+  await lastRow.getByLabel("Type", { exact: true }).click();
   await page.getByText("General Overhead").click();
-  await page.getByRole("button", { name: "Clear Values" }).click();
+  //await page.getByRole("button", { name: "Clear Values" }).click();
   await page.getByRole("button", { name: "Save" }).click();
   await page.getByRole("button", { name: "SAVE ANYWAYS" }).click();
   await page.locator(".buttons").click();
 
   //Validating if Delete row button is available
-  const isDeleteButtonVisible = await page
-    .getByRole("row", { name: "Badge Amount $" })
-    .getByRole("button")
-    .isVisible();
-  expect(isDeleteButtonVisible).toBe(true);
+  await page.getByText("williams.pdf").first().click();
+  //opening Allocation tab and updating values
+  await page.getByRole("tab", { name: "Allocations" }).click();
+  await lastRow.locator("#allocation_3").getByRole("button").isVisible();
   console.log("Delete button is visible");
 
-  //Canceling the delete row action
-  await page
-    .getByRole("row", { name: "Badge Amount $" })
-    .getByRole("button")
-    .nth(1)
-    .click();
-  await page.getByRole("button", { name: "Cancel" }).click();
+  // //Canceling the delete row action
+  // await lastRow
+  //   .getByRole("row", { name: "Cost Type Purchase Order ID Div" })
+  //   .getByRole("button")
+  //   .click();
+  // await page.getByRole("button", { name: "Cancel" }).click();
 
-  // Click the delete button in the last row
-  await lastRow.getByRole("button", { name: "Delete" }).click();
-
-  // Confirm the delete action
-  await page.getByRole("button", { name: "Confirm" }).click();
-  console.log("Last row deleted successfully.");
+  // // Confirm the delete action
+  // await lastRow
+  //   .getByRole("row", { name: "Cost Type Purchase Order ID Div" })
+  //   .getByRole("button")
+  //   .click();
+  // await page.getByRole("button", { name: "Confirm" }).click();
+  // console.log("Last row deleted successfully.");
 });

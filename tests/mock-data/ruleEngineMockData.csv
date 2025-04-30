@@ -1,10 +1,9 @@
 TCID,ruleName,ruleType,conditionType,conditions,assignments
-T1,Rule from CSV multiple conditions 2,Create Allocation,All,"[
-  {""dataSource"":""Invoice Data"",""field1"":""Total Amount"",""operator"":""Greater Than"",""dateOption"":""User Entry"",""compareWith"":""Allocations"",""object"":""User Entry"",""field2"":""Amount"",""value1"":""100""},
-  {""dataSource"":""Invoice Data"",""field1"":""Tax"",""operator"":""Less Than"",""dateOption"":""User Entry"",""compareWith"":""Allocations"",""object"":""User Entry"",""field2"":""Tax"",""value1"":""10""}
+T1,Rule from CSV file,Create Allocation,Any,"[
+  {""dataSource"":""Invoice Data"",""field1"":""Total Amount"",""operator"":""Equal To"",""dateOption"":""User Entry"",""compareWith"":""Allocations"",""object"":""User Entry"",""field2"":""Amount"",""value1"":""100""}
 ]","[
-  {""destination"":""Allocations"",""target"":""Amount"",""assignValue"":""Invoice Data"",""field"":""Total Amount"",""value"":""500"",""message"":""msg1""},
-  {""destination"":""Allocations"",""target"":""Tax"",""assignValue"":""User Entry"",""field"":""Tax"",""value"":""25"",""message"":""msg2""}
+  {""destination"":""Allocations"",""target"":""Amount"",""assignValue"":""User Entry"",""field"":""Total Amount"",""value"":""500"",""message"":""msg1""},
+  {""destination"":""Allocations"",""target"":""Project ID"",""assignValue"":""User Entry"",""field"":""Tax"",""value"":""P1234"",""message"":""msg2""}
 ]"
 
 T2,Rule from CSV Business Exception,Business Exception,All,"[]","[]"

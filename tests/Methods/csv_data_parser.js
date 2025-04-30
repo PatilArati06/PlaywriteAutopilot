@@ -59,9 +59,17 @@ async function RuleEngineDataParser(fileName, tcid) {
   return record;
   }
 
-
+  function readCsvSync(fileName) {
+    const filePath = path.resolve(__dirname,'..', fileName)
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    return parse(fileContent, {
+      columns: true, // returns array of objects with headers as keys
+      skip_empty_lines: true,
+    });
+  }
 
 module.exports = {
     UseAIDataParser,
-    RuleEngineDataParser
+    RuleEngineDataParser,
+    readCsvSync
 };
