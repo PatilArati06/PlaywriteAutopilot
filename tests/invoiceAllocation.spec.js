@@ -135,7 +135,7 @@ test.only("Add values in fields present in allocation tap and validate", async (
     .filter({ hasText: /^Automation Testing By playwright2\.0$/ })
     .nth(1)
     .click();
-  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await page.getByRole("button", { name: "All", exact: true }).click();
   await page.getByText("williams.pdf").click();
   //await page.goto("https://app-dev.briq.com/#/spend-management/folders-v2/65806f42-4115-44ae-9c01-066cd82d8dbe_v2/invoices/8dc23d6e-517f-4fbe-98b5-23845006d9d4");
   //opening Allocation tab and updating values
