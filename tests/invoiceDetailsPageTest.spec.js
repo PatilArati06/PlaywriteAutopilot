@@ -531,7 +531,7 @@ for (const item of expectedValues.line_item) {
     }
   });
 
-  test.only('T8. verify downlaod invoice button', async({ page })=>{
+  test('T8. verify downlaod invoice button', async({ page })=>{
     const exData = testData["T8"];
     const fileName = exData.invoiceName;
     const folderName = exData.folder;
@@ -667,4 +667,57 @@ expect(rowCount).toBeGreaterThan(0);
     } else {
       console.log("❌ Popup is not open");
     }
+  });
+
+  test.only('T10. PO Matching(matching line item rows count with po matching rows count)', async({ page })=>{
+    const exData = testData["T10"];
+    const fileName = exData.invoiceName;
+    const folderName = exData.folder;
+    
+   
+    await page.waitForTimeout(12000);
+    await page.getByRole('link', { name: 'Invoices' }).click();
+    await page.getByLabel('Search card').fill(folderName);
+    await page.locator("//strong[normalize-space()='"+folderName+"']").click();
+  
+    await page.waitForTimeout(10000);
+    await page.getByRole('button', { name: 'All' }).click();
+    await page.waitForTimeout(10000);
+  
+    //Get company specific selected line items from API
+
+    await page.getByPlaceholder('Search card').fill(fileName);
+    await page.getByPlaceholder('Search card').press('Enter');
+    await page.waitForTimeout(10000);
+    const rows = await page.locator('//div[@ref="eCenterContainer"] //div[@role="row"]');
+    await rows.nth(0).click();
+    await page.waitForTimeout(10000);
+    const input = page.locator('input[name="Purchase_Order_Number__standard"]');
+
+    // Check visibility
+    const isVisible = await input.isVisible();
+
+    // Check if it has a value (i.e., data)
+    const value = await input.inputValue();
+    const hasData = value.trim() !== '';
+
+    if (isVisible && hasData) {
+      console.log('Input is visible and has data:', value);
+      console.log("Switching to 'PO Matching tab'...");
+      await page.locator("//div[@tab-value='po_matching']").click();
+      await page.waitForTimeout(1000);
+      const totalText = await page.locator('.pagination_box strong >> nth=2', { timeout: 5000 }).innerText();
+     const totalCount = parseInt(totalText);
+      const lineItemTab = page.locator('div[role="tab"][tab-value="line_items"]');
+      const text = await lineItemTab.textContent();
+
+      const match = text.match(/\((\d+)\)/);
+      const lineItemCount = match ? parseInt(match[1], 10) : 0;
+      expect(totalCount).toBe(lineItemCount);
+    } else if (isVisible) {
+      console.log('PO No field is visible but has no data.');
+    } else {
+      console.log('PO No field is not visible.');
+    }
+    await page.waitForTimeout(10000);
   });
